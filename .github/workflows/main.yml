@@ -1,0 +1,32 @@
+name: Build and Deploy JS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '14'
+      
+      - name: Install Dependencies
+        run: npm install
+        
+      - name: Build Project
+        run: npm run build
+        
+      - name: Commit and Push Bundled Files
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add dist -f
+          git commit -m "Deploying bundled output" || true
+          git push origin main || true
