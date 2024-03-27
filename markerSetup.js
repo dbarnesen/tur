@@ -2,7 +2,7 @@ import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
 import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 
-let currentlyOpenContent = null; // Track currently open collection content
+let currentlyOpenContent = null; // Track the DOM element of the currently open collection content
 
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
@@ -25,40 +25,47 @@ export function setupMarkers(map) {
 
                 const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
 
+                // Close the previously open content if it is not the current one being opened.
                 if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
-                    // Close previously open content
-                    currentlyOpenContent.style.display = 'none';
-                    currentlyOpenContent.classList.remove('expanded');
+                    closeCollectionContent(currentlyOpenContent);
                 }
 
+                // If the current item's content is not already expanded, expand it.
                 if (!collectionContent.classList.contains('expanded')) {
                     collectionContent.style.display = 'block'; // Make it visible
                     requestAnimationFrame(() => {
                         collectionContent.classList.add('expanded');
-                        collectionContent.style.height = '30vh'; // Smoothly transition to 30vh
+                        collectionContent.style.height = '30vh'; // Set initial open height
                     });
+                    currentlyOpenContent = collectionContent; // Update the reference to the currently open content
                 } else {
-                    collectionContent.classList.remove('expanded');
-                    setTimeout(() => {
-                        if (!collectionContent.classList.contains('expanded')) {
-                            collectionContent.style.display = 'none'; // Hide after transition if collapsed
-                        }
-                    }, 300); // Match this with your CSS transition duration
-                    collectionContent.style.height = ''; // Revert to default after transition
+                    // If the current item's content is already open, close it.
+                    closeCollectionContent(collectionContent);
+                    currentlyOpenContent = null;
                 }
 
-                currentlyOpenContent = collectionContent.classList.contains('expanded') ? collectionContent : null;
-
-                // Update marker icons
-                const allMarkers = document.querySelectorAll('.custom-marker');
-                allMarkers.forEach((icon, idx) => {
-                    icon.style.backgroundImage = `url(${collectionItems[idx] === item ? selectedMarkerIcon : unselectedMarkerIcon})`;
-                });
+                // Update the appearance of all markers to reflect the current selection.
+                updateMarkerAppearance(collectionItems, item, markerElement);
             });
 
             marker.getElement().addEventListener('click', () => {
-                item.click(); // Mimic click on the collection item
+                item.click(); // Trigger the click event on the associated collection item.
             });
         }
+    });
+}
+
+function closeCollectionContent(content) {
+    content.classList.remove('expanded');
+    content.style.height = '20vh'; // Begin closing the content
+    setTimeout(() => {
+        content.style.display = 'none'; // Fully hide the content after the transition
+    }, 300); // Ensure this duration matches your CSS transition
+}
+
+function updateMarkerAppearance(collectionItems, selectedItem, selectedMarkerElement) {
+    collectionItems.forEach((item, idx) => {
+        const iconUrl = item === selectedItem ? selectedMarkerIcon : unselectedMarkerIcon;
+        document.querySelectorAll('.custom-marker')[idx].style.backgroundImage = `url(${iconUrl})`;
     });
 }
