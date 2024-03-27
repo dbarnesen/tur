@@ -4,7 +4,7 @@ import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 
 let currentlyOpenContent = null; // Track the currently open collection content
 let currentlySelectedItem = null; // Track the currently selected item for styling
-let markers = []; // Array to keep track of all marker elements for styling
+let allMarkers = []; // Keep track of all markers for updating their icons
 
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
@@ -21,63 +21,69 @@ export function setupMarkers(map) {
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            markers.push({ element: markerElement, item: item }); // Store marker elements with their corresponding items
+            allMarkers.push({ marker, item }); // Store markers with their associated items
 
             item.addEventListener('click', function() {
-                // Update selection style
                 if (currentlySelectedItem) {
                     currentlySelectedItem.classList.remove('selected');
-                    // Find the previously selected marker and update its icon
-                    const prevMarker = markers.find(m => m.item === currentlySelectedItem);
-                    if (prevMarker) {
-                        prevMarker.element.style.backgroundImage = `url(${unselectedMarkerIcon})`;
-                    }
+                    updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon); // Reset previous marker icon
                 }
                 this.classList.add('selected');
                 currentlySelectedItem = this;
 
-                // Update the clicked marker's icon
-                const clickedMarker = markers.find(m => m.item === item);
-                if (clickedMarker) {
-                    clickedMarker.element.style.backgroundImage = `url(${selectedMarkerIcon})`;
-                }
-
-                // Fly to and highlight the collection item
                 map.flyTo({ center: [longitude, latitude], zoom: 16 });
                 scrollToSelectedItem(this);
 
-                // Toggle collection content visibility
                 const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
-                if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
-                    closeCollectionContent(currentlyOpenContent); // Close any currently open content
-                }
-                if (collectionContent !== currentlyOpenContent) {
-                    openCollectionContent(collectionContent); // Open the new content
-                    currentlyOpenContent = collectionContent;
-                } else {
-                    closeCollectionContent(collectionContent); // If the same content is clicked, close it
-                    currentlyOpenContent = null;
-                }
+                toggleCollectionContent(collectionContent, item);
+
+                updateMarkerIcon(this, selectedMarkerIcon); // Update current marker icon
             });
 
             marker.getElement().addEventListener('click', () => {
-                item.dispatchEvent(new Event('click')); // Simulate the item click, triggering all associated actions
+                // Ensure the click on the marker triggers the Webflow interaction by simulating a click on the item
+                if (currentlySelectedItem !== item) {
+                    item.dispatchEvent(new Event('click', { bubbles: true })); // The bubbles option ensures the event bubbles up through the DOM
+                }
             });
         }
     });
 }
 
+function toggleCollectionContent(content, item) {
+    if (currentlyOpenContent && currentlyOpenContent !== content) {
+        closeCollectionContent(currentlyOpenContent);
+    }
+
+    if (content !== currentlyOpenContent) {
+        openCollectionContent(content);
+        currentlyOpenContent = content;
+    } else {
+        closeCollectionContent(content);
+        currentlyOpenContent = null;
+    }
+}
+
 function closeCollectionContent(content) {
     content.classList.remove('expanded');
-    content.style.height = '0'; // Start the transition to collapse
-    setTimeout(() => content.style.display = 'none', 300); // Hide after transition
+    content.style.height = '0';
+    setTimeout(() => content.style.display = 'none', 300);
 }
 
 function openCollectionContent(content) {
     content.style.display = 'block';
     setTimeout(() => {
         content.classList.add('expanded');
-        content.style.height = '30vh'; // Transition to open
-    }, 10); // A minor delay ensures the display block takes effect
+        content.style.height = '30vh';
+    }, 10); // Minor delay to ensure the transition is smooth
 }
 
+function updateMarkerIcon(item, iconUrl) {
+    // Find the marker associated with the item and update its icon
+    const markerData = allMarkers.find(m => m.item === item);
+    if (markerData) {
+        markerData.marker.getElement().style.backgroundImage = `url(${iconUrl})`;
+    }
+}
+
+// Ensure createCustomMarkerElement() and scrollToSelectedItem() are correctly defined in your markerUtils.js.
