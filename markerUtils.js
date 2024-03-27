@@ -30,3 +30,6 @@ export function applySelectionStyling(item, selectedCollectionItem) {
     item.style.backgroundColor = '#cc9752';
     return item; // Return the newly selected item for external tracking
 }
+export function applyPressedStyle(item) {
+    item.classList.add('selected'); // Add a class that mimics the Webflow style for pressed/focused state
+}
