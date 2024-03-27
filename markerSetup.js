@@ -20,42 +20,27 @@ export function setupMarkers(map) {
             }).setLngLat([longitude, latitude]).addTo(map);
 
             item.addEventListener('click', function() {
-    map.flyTo({ center: [longitude, latitude], zoom: 16 });
-    scrollToSelectedItem(this);
+                map.flyTo({ center: [longitude, latitude], zoom: 16 });
+                scrollToSelectedItem(this);
 
-    const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
+                const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
 
-    if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
-        // Close previously open content
-        currentlyOpenContent.style.display = 'none';
-        currentlyOpenContent.classList.remove('expanded');
-    }
+                // Adjusting logic for opening/closing and setting height
+                if (!collectionContent.classList.contains('expanded')) {
+                    collectionContent.style.display = 'block'; // Make it visible
+                    setTimeout(() => collectionContent.style.height = '30vh', 10); // Slight delay for smooth transition
+                    collectionContent.classList.add('expanded');
+                    currentlyOpenContent = collectionContent;
+                } else {
+                    collectionContent.classList.remove('expanded');
+                    collectionContent.style.height = '20vh';
+                    setTimeout(() => {
+                        collectionContent.style.display = 'none';
+                    }, 300); // Match this delay with your CSS transition time
+                    currentlyOpenContent = null;
+                }
 
-    if (!collectionContent.classList.contains('expanded')) {
-        collectionContent.style.display = 'block'; // Make it visible
-
-        // Use requestAnimationFrame to ensure the browser has recognized 'display: block'
-        // before proceeding to expand the content for a smooth transition.
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                collectionContent.classList.add('expanded');
-                collectionContent.style.height = '30vh'; // Smoothly transition to 30vh
-            });
-        });
-    } else {
-        collectionContent.classList.remove('expanded');
-        setTimeout(() => {
-            if (!collectionContent.classList.contains('expanded')) {
-                collectionContent.style.display = 'none'; // Hide after transition if collapsed
-            }
-        }, 300); // Ensure this matches your CSS transition duration
-        collectionContent.style.height = ''; // Revert to default after transition
-    }
-
-    currentlyOpenContent = collectionContent.classList.contains('expanded') ? collectionContent : null;
-
-
-                // Update marker icon for selected item
+                // Update marker icon logic
                 const allMarkers = document.querySelectorAll('.custom-marker');
                 allMarkers.forEach((icon, idx) => {
                     icon.style.backgroundImage = `url(${collectionItems[idx] === item ? selectedMarkerIcon : unselectedMarkerIcon})`;
@@ -63,7 +48,7 @@ export function setupMarkers(map) {
             });
 
             marker.getElement().addEventListener('click', () => {
-                item.click(); // Simulate click on the collection item
+                item.click(); // Mimic click on the collection item
             });
         }
     });
