@@ -9,52 +9,68 @@ let allMarkers = []; // Keep track of all markers for updating their icons
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
 
-    collectionItems.forEach((item, index) => {
+    collectionItems.forEach((item) => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
         const itemId = item.getAttribute('data-item-id');
+        const category = item.getAttribute('data-kategori'); // Category for filtering
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
-            const markerElement = createCustomMarkerElement(unselectedMarkerIcon); // Ensure this function returns a DOM element
+            const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
             const marker = new mapboxgl.Marker({
                 element: markerElement,
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            allMarkers.push({ marker, item }); // Store markers with their associated items
+            allMarkers.push({ marker, item, category, element: markerElement }); // Include category in the marker data
 
             item.addEventListener('click', function() {
+                // Reset styling for previously selected item
                 if (currentlySelectedItem) {
                     currentlySelectedItem.classList.remove('selected');
-                    updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon); // Reset previous marker icon
+                    const previousMarker = allMarkers.find(m => m.item === currentlySelectedItem);
+                    if (previousMarker) {
+                        previousMarker.element.style.backgroundImage = `url(${unselectedMarkerIcon})`;
+                    }
                 }
+
+                // Set new selected item and update styling
                 this.classList.add('selected');
                 currentlySelectedItem = this;
+                const currentMarker = allMarkers.find(m => m.item === this);
+                if (currentMarker) {
+                    currentMarker.element.style.backgroundImage = `url(${selectedMarkerIcon})`;
+                }
 
+                // Zoom to the item's location on the map
                 map.flyTo({ center: [longitude, latitude], zoom: 16 });
                 scrollToSelectedItem(this);
 
+                // Open or close the collection content
                 const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
-                toggleCollectionContent(collectionContent, item);
-
-                updateMarkerIcon(this, selectedMarkerIcon); // Update current marker icon
+                toggleCollectionContent(collectionContent);
             });
 
             marker.getElement().addEventListener('click', () => {
-                // Ensure the click on the marker triggers the Webflow interaction by simulating a click on the item
-                if (currentlySelectedItem !== item) {
-                    item.dispatchEvent(new Event('click', { bubbles: true })); // The bubbles option ensures the event bubbles up through the DOM
-                }
+                item.click(); // Simulate click on the collection item
             });
         }
     });
+
+    // Set up filtering based on "showmapbutton" clicks
+    document.querySelectorAll('.showmapbutton').forEach(button => {
+        button.addEventListener('click', function() {
+            const filterValue = this.getAttribute('data-kategori');
+            filterCollectionItems(filterValue);
+            filterMarkers(filterValue);
+        });
+    });
 }
 
-function toggleCollectionContent(content, item) {
+function toggleCollectionContent(content) {
     if (currentlyOpenContent && currentlyOpenContent !== content) {
         closeCollectionContent(currentlyOpenContent);
     }
-
     if (content !== currentlyOpenContent) {
         openCollectionContent(content);
         currentlyOpenContent = content;
@@ -64,26 +80,35 @@ function toggleCollectionContent(content, item) {
     }
 }
 
-function closeCollectionContent(content) {
-    content.classList.remove('expanded');
-    content.style.height = '0';
-    setTimeout(() => content.style.display = 'none', 300);
-}
-
 function openCollectionContent(content) {
     content.style.display = 'block';
     setTimeout(() => {
         content.classList.add('expanded');
         content.style.height = '30vh';
-    }, 10); // Minor delay to ensure the transition is smooth
+    }, 10); // Minor delay to ensure smooth transition
 }
 
-function updateMarkerIcon(item, iconUrl) {
-    // Find the marker associated with the item and update its icon
-    const markerData = allMarkers.find(m => m.item === item);
-    if (markerData) {
-        markerData.marker.getElement().style.backgroundImage = `url(${iconUrl})`;
-    }
+function closeCollectionContent(content) {
+    content.classList.remove('expanded');
+    content.style.height = '0';
+    setTimeout(() => content.style.display = 'none', 300); // Match this with CSS transition
 }
 
-// Ensure createCustomMarkerElement() and scrollToSelectedItem() are correctly defined in your markerUtils.js.
+function filterCollectionItems(filterValue) {
+    allMarkers.forEach(({ item, category }) => {
+        item.style.display = (filterValue === 'all' || category === filterValue) ? '' : 'none';
+    });
+}
+
+function filterMarkers(filterValue) {
+    allMarkers.forEach(({ marker, category, element }) => {
+        const isVisible = filterValue === 'all' || category === filterValue;
+        if (isVisible) {
+            element.style.visibility = 'visible';
+            if (!marker.getMap()) marker.addTo(map); // Add back if previously removed
+        } else {
+            element.style.visibility = 'hidden';
+            marker.remove(); // Remove from map if not visible
+        }
+    });
+}
