@@ -2,9 +2,9 @@ import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
 import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 
-let currentlyOpenContent = null; // Track the DOM element of the currently open collection content
-let currentlySelectedItem = null; // Track the DOM element of the currently selected collection item
-let markers = []; // Array to keep track of all markers
+let currentlyOpenContent = null; // Track the currently open collection content
+let currentlySelectedItem = null; // Track the currently selected item for styling
+let markers = []; // Array to keep track of all marker elements for styling
 
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
@@ -15,74 +15,69 @@ export function setupMarkers(map) {
         const itemId = item.getAttribute('data-item-id');
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
-            const markerElement = createCustomMarkerElement(unselectedMarkerIcon); // This function needs to return a DOM element for the marker
+            const markerElement = createCustomMarkerElement(unselectedMarkerIcon); // Ensure this function returns a DOM element
             const marker = new mapboxgl.Marker({
                 element: markerElement,
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            markers.push({ id: itemId, marker: marker, element: markerElement }); // Store marker with associated item ID
+            markers.push({ element: markerElement, item: item }); // Store marker elements with their corresponding items
 
             item.addEventListener('click', function() {
-                if (currentlySelectedItem !== this) {
-                    // Remove 'selected' class from previously selected item and reset its marker
-                    if (currentlySelectedItem) {
-                        currentlySelectedItem.classList.remove('selected');
-                        const previousMarkerData = markers.find(m => m.id === currentlySelectedItem.getAttribute('data-item-id'));
-                        if (previousMarkerData) {
-                            previousMarkerData.element.style.backgroundImage = `url(${unselectedMarkerIcon})`;
-                        }
+                // Update selection style
+                if (currentlySelectedItem) {
+                    currentlySelectedItem.classList.remove('selected');
+                    // Find the previously selected marker and update its icon
+                    const prevMarker = markers.find(m => m.item === currentlySelectedItem);
+                    if (prevMarker) {
+                        prevMarker.element.style.backgroundImage = `url(${unselectedMarkerIcon})`;
                     }
+                }
+                this.classList.add('selected');
+                currentlySelectedItem = this;
 
-                    // Add 'selected' class to the new item and update its marker
-                    this.classList.add('selected');
-                    const currentMarkerData = markers.find(m => m.id === itemId);
-                    if (currentMarkerData) {
-                        currentMarkerData.element.style.backgroundImage = `url(${selectedMarkerIcon})`;
-                    }
-                    currentlySelectedItem = this;
+                // Update the clicked marker's icon
+                const clickedMarker = markers.find(m => m.item === item);
+                if (clickedMarker) {
+                    clickedMarker.element.style.backgroundImage = `url(${selectedMarkerIcon})`;
                 }
 
-                // Logic to handle collection content visibility and transitions
-                handleCollectionContent(this, itemId);
+                // Fly to and highlight the collection item
+                map.flyTo({ center: [longitude, latitude], zoom: 16 });
+                scrollToSelectedItem(this);
+
+                // Toggle collection content visibility
+                const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
+                if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
+                    closeCollectionContent(currentlyOpenContent); // Close any currently open content
+                }
+                if (collectionContent !== currentlyOpenContent) {
+                    openCollectionContent(collectionContent); // Open the new content
+                    currentlyOpenContent = collectionContent;
+                } else {
+                    closeCollectionContent(collectionContent); // If the same content is clicked, close it
+                    currentlyOpenContent = null;
+                }
             });
 
             marker.getElement().addEventListener('click', () => {
-                item.click(); // Simulate click on the associated collection item
+                item.dispatchEvent(new Event('click')); // Simulate the item click, triggering all associated actions
             });
         }
     });
 }
 
-function handleCollectionContent(item, itemId) {
-    const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
-    if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
-        // Close the previously open content
-        currentlyOpenContent.classList.remove('expanded');
-        currentlyOpenContent.style.height = '0';
-        setTimeout(() => {
-            currentlyOpenContent.style.display = 'none';
-        }, 300); // Match the CSS transition time
-    }
-
-    // Open or close the current item's content
-    if (!collectionContent.classList.contains('expanded')) {
-        collectionContent.style.display = 'block';
-        requestAnimationFrame(() => {
-            collectionContent.classList.add('expanded');
-            collectionContent.style.height = '30vh'; // Adjust as needed
-        });
-        currentlyOpenContent = collectionContent;
-    } else {
-        collectionContent.classList.remove('expanded');
-        collectionContent.style.height = '0';
-        setTimeout(() => {
-            collectionContent.style.display = 'none';
-        }, 300); // Match the CSS transition time
-        currentlyOpenContent = null;
-    }
-
-    scrollToSelectedItem(item); // Ensure the item is scrolled into view
+function closeCollectionContent(content) {
+    content.classList.remove('expanded');
+    content.style.height = '0'; // Start the transition to collapse
+    setTimeout(() => content.style.display = 'none', 300); // Hide after transition
 }
 
-// Don't forget to implement createCustomMarkerElement() in markerUtils.js to return a correctly styled DOM element for each marker.
+function openCollectionContent(content) {
+    content.style.display = 'block';
+    setTimeout(() => {
+        content.classList.add('expanded');
+        content.style.height = '30vh'; // Transition to open
+    }, 10); // A minor delay ensures the display block takes effect
+}
+
