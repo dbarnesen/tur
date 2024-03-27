@@ -3,7 +3,7 @@ import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.j
 import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 
 let currentlyOpenContent = null; // Track the DOM element of the currently open collection content
-let currentlySelectedItem = null; // Track the currently selected collection item
+let currentlySelectedItem = null; // Track the DOM element of the currently selected collection item
 
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
@@ -14,69 +14,69 @@ export function setupMarkers(map) {
         const itemId = item.getAttribute('data-item-id');
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
+            // Create a marker for each collection item
             const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
             const marker = new mapboxgl.Marker({
                 element: markerElement,
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
 
+            // Event listener for collection item clicks
             item.addEventListener('click', function() {
-                if (currentlySelectedItem) {
-                    currentlySelectedItem.classList.remove('selected'); // Remove the selected class from previously selected item
-                }
-                this.classList.add('selected'); // Add the selected class to the clicked item
-                currentlySelectedItem = this; // Update the reference to the currently selected item
-
-                map.flyTo({ center: [longitude, latitude], zoom: 16 });
-                scrollToSelectedItem(this);
-
-                const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
-
-                if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
-                    closeCollectionContent(currentlyOpenContent);
-                }
-
-                if (!collectionContent.classList.contains('expanded')) {
-                    collectionContent.style.display = 'block';
-                    requestAnimationFrame(() => {
-                        collectionContent.classList.add('expanded');
-                        collectionContent.style.height = '30vh';
-                    });
-                    currentlyOpenContent = collectionContent;
-                } else {
-                    closeCollectionContent(collectionContent);
-                    currentlyOpenContent = null;
-                }
-
-                updateMarkerAppearance(collectionItems, itemId);
+                handleCollectionItemClick(this, itemId, collectionItems, map);
             });
 
+            // Simulate collection item click when its marker is clicked
             marker.getElement().addEventListener('click', () => {
-                if (currentlySelectedItem !== item) { // Check if the clicked marker's item is not already selected
-                    item.dispatchEvent(new Event('click')); // Dispatch click event on the item
-                }
+                item.dispatchEvent(new Event('click', {bubbles: true})); // Ensure the event bubbles up to trigger the listener on `item`
             });
         }
     });
 }
 
-function closeCollectionContent(content) {
-    content.classList.remove('expanded');
-    content.style.height = '20vh';
-    setTimeout(() => {
-        content.style.display = 'none';
-    }, 300);
+function handleCollectionItemClick(item, itemId, collectionItems, map) {
+    // Fly the map to the clicked item's location
+    map.flyTo({ center: [parseFloat(item.getAttribute('data-lng')), parseFloat(item.getAttribute('data-lat'))], zoom: 16 });
+    scrollToSelectedItem(item);
+
+    // Close any previously open content
+    if (currentlyOpenContent) {
+        currentlyOpenContent.style.display = 'none';
+        currentlyOpenContent.classList.remove('expanded');
+    }
+
+    // Handle opening or closing the clicked item's content
+    const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
+    if (currentlyOpenContent !== collectionContent) {
+        collectionContent.style.display = 'block';
+        collectionContent.classList.add('expanded');
+        collectionContent.style.height = '30vh'; // Open to initial height
+        currentlyOpenContent = collectionContent; // Update the currently open content
+    } else {
+        collectionContent.classList.remove('expanded');
+        collectionContent.style.height = '20vh'; // Collapse content
+        setTimeout(() => collectionContent.style.display = 'none', 300); // Hide after animation
+        currentlyOpenContent = null;
+    }
+
+    // Update selection visual feedback
+    if (currentlySelectedItem) {
+        currentlySelectedItem.classList.remove('selected'); // Remove selection from previously selected item
+    }
+    item.classList.add('selected'); // Highlight the newly selected item
+    currentlySelectedItem = item;
+
+    // Update marker icons to reflect the current selection
+    updateMarkerIcons(collectionItems, item);
 }
 
-function updateMarkerAppearance(collectionItems, selectedItemId) {
-    collectionItems.forEach(item => {
+function updateMarkerIcons(collectionItems, selectedItem) {
+    collectionItems.forEach((item) => {
         const markerIcon = item.querySelector('.custom-marker');
-        const isItemSelected = item.getAttribute('data-item-id') === selectedItemId;
-        markerIcon.style.backgroundImage = `url(${isItemSelected ? selectedMarkerIcon : unselectedMarkerIcon})`;
-        if (isItemSelected) {
-            item.classList.add('selected');
-        } else {
-            item.classList.remove('selected');
+        if (markerIcon) {
+            const isSelected = item === selectedItem;
+            const iconUrl = isSelected ? selectedMarkerIcon : unselectedMarkerIcon;
+            markerIcon.style.backgroundImage = `url(${iconUrl})`;
         }
     });
 }
