@@ -1,18 +1,18 @@
 import mapboxgl from 'mapbox-gl';
-import { createCustomMarkerElement, toggleMarkerIcon, scrollToSelectedItem, applySelectionStyling } from './markerUtils.js';
-import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
+import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
+import { unselectedMarkerIcon, selectedMarkerIcon, mapboxAccessToken } from './config.js';
+
+// Keep track of the currently selected collection item for styling purposes
+let selectedCollectionItem = null;
 
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
-    let markers = [];
-    let selectedCollectionItem = null; // Track the currently selected collection item for styling purposes
-
     collectionItems.forEach((item, index) => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
-        const kategori = item.getAttribute('data-kategori'); // Example attribute, ensure this matches your data
+        const kategori = item.getAttribute('data-kategori');
+        const itemId = item.getAttribute('data-item-id');
 
-        // Ensure latitude and longitude are valid before creating a marker
         if (!isNaN(latitude) && !isNaN(longitude) && kategori) {
             const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
             const marker = new mapboxgl.Marker({
@@ -20,44 +20,41 @@ export function setupMarkers(map) {
                 anchor: 'bottom'
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            markers.push(marker); // Add the marker to our array of markers for possible future use
-
-            // Event listener for clicking collection items
+            // Click event for collection items
             item.addEventListener('click', function() {
-                // Center the map on the marker and zoom in
-                map.flyTo({
-                    center: [longitude, latitude],
-                    zoom: 16
-                });
-                
-                scrollToSelectedItem(this); // Scroll the collection item into view
-                
-                // Toggle marker icon to reflect selection
-                markers.forEach((m, idx) => {
-                    const iconUrl = idx === index ? selectedMarkerIcon : unselectedMarkerIcon;
-                    m.getElement().style.backgroundImage = `url(${iconUrl})`;
-                });
+                map.flyTo({ center: [longitude, latitude], zoom: 15 });
+                scrollToSelectedItem(this);
 
-                // Apply styling changes to indicate selection
+                // Apply and manage selection styling
                 if (selectedCollectionItem) {
-                    selectedCollectionItem.style.borderColor = '';
-                    selectedCollectionItem.style.backgroundColor = '';
+                    selectedCollectionItem.classList.remove('selected');
                 }
-                this.style.borderColor = '#cc9752';
-                this.style.backgroundColor = '#cc9752';
+                this.classList.add('selected');
                 selectedCollectionItem = this; // Update the currently selected collection item
-
-                // Find and simulate a click on the corresponding .tur-content-reveal element
-                const itemId = this.getAttribute('data-item-id');
-                const itemDetail = document.querySelector(`.tur-content-reveal[data-content-id="${itemId}"]`);
-                if (itemDetail) {
-                    itemDetail.click(); // Trigger Webflow interaction
+                
+                // Close currently open content
+                if (currentOpenContentId && currentOpenContentId !== itemId) {
+                    const currentlyOpenContent = document.querySelector(`.tur-content-reveal[data-content-id="${currentOpenContentId}"]`);
+                    currentlyOpenContent.style.display = 'none'; // Hide previous content
                 }
+
+                // Find and display the new content, toggle if the same item is clicked
+                const itemDetail = document.querySelector(`.tur-content-reveal[data-content-id="${itemId}"]`);
+                itemDetail.style.display = itemDetail.style.display === 'block' ? 'none' : 'block';
+                currentOpenContentId = itemDetail.style.display === 'block' ? itemId : null;
+
+                // Toggle marker icons
+                marker.getElement().style.backgroundImage = `url(${selectedMarkerIcon})`;
+                document.querySelectorAll('.custom-marker').forEach((elem, idx) => {
+                    if (idx !== index) {
+                        elem.style.backgroundImage = `url(${unselectedMarkerIcon})`;
+                    }
+                });
             });
 
-            // Event listener for clicking markers
+            // Click event for markers
             marker.getElement().addEventListener('click', () => {
-                item.click(); // Triggers the click event on the corresponding collection item
+                item.click(); // Simulates clicking the associated collection item
             });
         }
     });
