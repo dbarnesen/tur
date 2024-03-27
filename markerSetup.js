@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
+import { createCustomMarkerElement, scrollToSelectedItem, resetArrow, applyPressedStyle } from './markerUtils.js'; // Assuming resetArrow and applyPressedStyle are implemented
 import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 
 let currentlyOpenContent = null; // Track currently open collection content
@@ -20,36 +20,53 @@ export function setupMarkers(map) {
             }).setLngLat([longitude, latitude]).addTo(map);
 
             item.addEventListener('click', function() {
-                map.flyTo({ center: [longitude, latitude], zoom: 16 });
-                scrollToSelectedItem(this);
-
-                const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
-
-                // Adjusting logic for opening/closing and setting height
-                if (!collectionContent.classList.contains('expanded')) {
-                    collectionContent.style.display = 'block'; // Make it visible
-                    setTimeout(() => collectionContent.style.height = '30vh', 10); // Slight delay for smooth transition
-                    collectionContent.classList.add('expanded');
-                    currentlyOpenContent = collectionContent;
-                } else {
-                    collectionContent.classList.remove('expanded');
-                    collectionContent.style.height = '20vh';
-                    setTimeout(() => {
-                        collectionContent.style.display = 'none';
-                    }, 300); // Match this delay with your CSS transition time
-                    currentlyOpenContent = null;
-                }
-
-                // Update marker icon logic
-                const allMarkers = document.querySelectorAll('.custom-marker');
-                allMarkers.forEach((icon, idx) => {
-                    icon.style.backgroundImage = `url(${collectionItems[idx] === item ? selectedMarkerIcon : unselectedMarkerIcon})`;
-                });
+                handleCollectionItemClick(item, itemId, collectionItems);
             });
 
             marker.getElement().addEventListener('click', () => {
-                item.click(); // Mimic click on the collection item
+                applyPressedStyle(item); // Apply Webflow's pressed/focused style programmatically
+                item.click(); // Simulate click on the collection item
             });
         }
+    });
+}
+
+function handleCollectionItemClick(item, itemId, collectionItems) {
+    map.flyTo({ center: [item.getAttribute('data-lng'), item.getAttribute('data-lat')], zoom: 16 });
+    scrollToSelectedItem(item);
+
+    const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
+
+    if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
+        closeCollectionContent(currentlyOpenContent); // Close previously open content
+    }
+
+    if (!collectionContent.classList.contains('expanded')) {
+        collectionContent.style.display = 'block'; // Make it visible
+        setTimeout(() => collectionContent.style.height = '30vh', 10); // Slight delay for display:block to apply
+        collectionContent.classList.add('expanded');
+    } else {
+        closeCollectionContent(collectionContent); // Close and hide current content
+    }
+
+    currentlyOpenContent = collectionContent.classList.contains('expanded') ? collectionContent : null;
+
+    // Update marker icons...
+    updateMarkerIcons(collectionItems, itemId);
+}
+
+function closeCollectionContent(content) {
+    content.classList.remove('expanded');
+    content.style.height = '20vh'; // Start collapsing
+    setTimeout(() => {
+        content.style.display = 'none'; // Hide after collapsing
+        resetArrow(content); // Reset arrow to original position if part of your UI
+    }, 300); // Match this delay with CSS transition duration
+}
+
+function updateMarkerIcons(collectionItems, selectedItemId) {
+    collectionItems.forEach((item, idx) => {
+        const iconUrl = item.getAttribute('data-item-id') === selectedItemId ? selectedMarkerIcon : unselectedMarkerIcon;
+        document.querySelectorAll('.custom-marker')[idx].style.backgroundImage = `url(${iconUrl})`;
     });
 }
