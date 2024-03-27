@@ -2,17 +2,18 @@ import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, toggleMarkerIcon, scrollToSelectedItem, applySelectionStyling } from './markerUtils.js';
 import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 
+let currentlyOpenContent = null; // Track currently open collection content
+
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
     let markers = [];
-    let selectedCollectionItem = null;
 
     collectionItems.forEach((item, index) => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
-        const kategori = item.getAttribute('data-kategori'); // Example attribute
+        const itemId = item.getAttribute('data-item-id'); // Assuming each item has a unique ID
 
-        if (!isNaN(latitude) && !isNaN(longitude) && kategori) {
+        if (!isNaN(latitude) && !isNaN(longitude)) {
             const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
             const marker = new mapboxgl.Marker({
                 element: markerElement,
@@ -22,20 +23,34 @@ export function setupMarkers(map) {
             markers.push(marker);
 
             item.addEventListener('click', function() {
-                map.flyTo({
-                    center: [longitude, latitude],
-                    zoom: 16
-                });
+                map.flyTo({ center: [longitude, latitude], zoom: 16 });
                 scrollToSelectedItem(item);
-                selectedCollectionItem = applySelectionStyling(item, selectedCollectionItem);
+                const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
+
+                if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
+                    // Close the currently open content if another item is selected
+                    currentlyOpenContent.style.display = 'none';
+                    currentlyOpenContent.style.height = '20vh'; // Reset size
+                }
+
+                // Toggle the display and size of the new content
+                if (collectionContent.style.display === 'block' && currentlyOpenContent === collectionContent) {
+                    collectionContent.style.display = 'none';
+                    collectionContent.style.height = '20vh'; // Reset size
+                } else {
+                    collectionContent.style.display = 'block';
+                    collectionContent.style.height = '30vh'; // Increase size for visibility
+                }
+
+                currentlyOpenContent = collectionContent.style.display === 'block' ? collectionContent : null;
+
                 toggleMarkerIcon(markers, index, selectedMarkerIcon, unselectedMarkerIcon);
+                applySelectionStyling(item, collectionItems); // Adjust as needed to reflect the current selection
             });
 
-            marker.getElement().addEventListener('click', function() {
+            marker.getElement().addEventListener('click', () => {
                 item.click(); // Triggers the click event on the corresponding collection item
             });
         }
     });
-
-    return markers; // Return markers for potential further use
 }
