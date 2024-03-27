@@ -24,30 +24,33 @@ export function setupMarkers(map) {
                 scrollToSelectedItem(this);
 
                 const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
+                
                 if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
                     // Close previously open content
+                    currentlyOpenContent.style.display = 'none'; // Hide it
                     currentlyOpenContent.classList.remove('expanded');
-                    currentlyOpenContent.style.height = ''; // Reset to default
                 }
 
                 if (!collectionContent.classList.contains('expanded')) {
+                    collectionContent.style.display = 'block'; // Make it visible
                     collectionContent.classList.add('expanded');
-                    collectionContent.style.height = '30vh'; // Explicitly set for initial open
+                    collectionContent.style.height = '30vh'; // Set height to 30vh for initial reveal
                 } else {
                     collectionContent.classList.remove('expanded');
-                    collectionContent.style.height = ''; // Allow CSS to control the height
+                    setTimeout(() => { // Use a timeout to allow the transition to finish before hiding
+                        if (!collectionContent.classList.contains('expanded')) {
+                            collectionContent.style.display = 'none'; // Hide after transition if collapsed
+                        }
+                    }, 300); // Match this timeout with your CSS transition duration
+                    collectionContent.style.height = ''; // Revert to default
                 }
 
                 currentlyOpenContent = collectionContent.classList.contains('expanded') ? collectionContent : null;
 
-                // Update marker icon to indicate selection
-                const markerIcons = document.querySelectorAll('.custom-marker');
-                markerIcons.forEach((icon, idx) => {
-                    if (collectionItems[idx] === item) {
-                        icon.style.backgroundImage = `url(${selectedMarkerIcon})`;
-                    } else {
-                        icon.style.backgroundImage = `url(${unselectedMarkerIcon})`;
-                    }
+                // Update marker icon for selected item
+                const allMarkers = document.querySelectorAll('.custom-marker');
+                allMarkers.forEach((icon, idx) => {
+                    icon.style.backgroundImage = `url(${collectionItems[idx] === item ? selectedMarkerIcon : unselectedMarkerIcon})`;
                 });
             });
 
