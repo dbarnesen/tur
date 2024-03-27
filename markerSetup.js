@@ -25,21 +25,25 @@ export function setupMarkers(map) {
             item.addEventListener('click', function() {
                 map.flyTo({ center: [longitude, latitude], zoom: 16 });
                 scrollToSelectedItem(item);
+                const contentSlideCnt = document.querySelector('.tur-content-slide-cnt'); // The slide container
                 const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
 
                 if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
                     // Close the currently open content if another item is selected
                     currentlyOpenContent.style.display = 'none';
                     currentlyOpenContent.style.height = '20vh'; // Reset size
+                    contentSlideCnt.style.display = 'none'; // Hide the slide container
                 }
 
-                // Toggle the display and size of the new content
+                // Toggle the display and size of the new content and the slide container
                 if (collectionContent.style.display === 'block' && currentlyOpenContent === collectionContent) {
                     collectionContent.style.display = 'none';
                     collectionContent.style.height = '20vh'; // Reset size
+                    contentSlideCnt.style.display = 'none'; // Hide the slide container
                 } else {
                     collectionContent.style.display = 'block';
                     collectionContent.style.height = '30vh'; // Increase size for visibility
+                    contentSlideCnt.style.display = 'block'; // Show the slide container
                 }
 
                 currentlyOpenContent = collectionContent.style.display === 'block' ? collectionContent : null;
