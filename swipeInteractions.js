@@ -1,4 +1,3 @@
-// A helper function to select all elements and apply a callback function. Mimics jQuery's approach for convenience.
 const $$ = (selector, callback) => {
     document.querySelectorAll(selector).forEach(callback);
 };
@@ -17,35 +16,43 @@ export function setupSwipeInteractions() {
 
         const deltaY = endY - startY;
         if (Math.abs(deltaY) > minSwipeDistance) {
-            if (deltaY > 0) event.preventDefault();
-            deltaY < 0 ? expandDiv(event.target) : collapseDiv(event.target);
+            if (deltaY > 0) {
+                collapseDiv(event.target); // Swiping down
+            } else {
+                expandDiv(event.target); // Swiping up
+            }
             window.scrollTo(0, 0);
             startY = null;
         }
     };
 
     const expandDiv = (target) => {
-        // Find the closest .tur-collection-content to the event target and adjust its style
         const content = target.closest('.tur-collection-content');
         if (content) {
             content.style.height = '70vh';
-        }
-        // Adjust the tray arrow within the same content block
-        const trayArrow = content.querySelector('.tur-tray-arrow');
-        if (trayArrow) {
-            trayArrow.style.transform = 'rotateX(0deg)';
+            content.classList.add('expanded'); // Mark as expanded
+            const trayArrow = content.querySelector('.tur-tray-arrow');
+            if (trayArrow) {
+                trayArrow.style.transform = 'rotateX(0deg)'; // Adjust arrow for expanded state
+            }
         }
     };
 
     const collapseDiv = (target) => {
-        // Similar logic to expandDiv, but for collapsing
         const content = target.closest('.tur-collection-content');
         if (content) {
-            content.style.height = '20vh';
-        }
-        const trayArrow = content.querySelector('.tur-tray-arrow');
-        if (trayArrow) {
-            trayArrow.style.transform = 'rotateX(180deg)';
+            content.classList.remove('expanded'); // Mark as not expanded
+            content.style.height = '20vh'; // Start collapse
+            setTimeout(() => {
+                // Only hide if the content is not expanded after the delay
+                if (!content.classList.contains('expanded')) {
+                    content.style.display = 'none'; // Hide after collapsing
+                }
+            }, 300); // Delay should match CSS transition for smooth effect
+            const trayArrow = content.querySelector('.tur-tray-arrow');
+            if (trayArrow) {
+                trayArrow.style.transform = 'rotateX(180deg)'; // Reset arrow for collapsed state
+            }
         }
     };
 
