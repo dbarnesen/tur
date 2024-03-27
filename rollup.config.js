@@ -4,10 +4,10 @@ export default {
   output: {
     file: 'dist/bundle.js', // Where to output the bundle
     format: 'iife' // Format: Immediately-Invoked Function Expression (good for web)
-    globals: {
+  },
+  globals: {
       'mapbox-gl': 'mapboxgl'
     },
-  },
-  plugins: [terser()] // Minify the output (optional)
-  external: ['mapbox-gl'],
+  plugins: [terser()] ,// Minify the output (optional)
+  external: ['mapbox-gl']
 };
