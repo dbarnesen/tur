@@ -20,32 +20,40 @@ export function setupMarkers(map) {
             }).setLngLat([longitude, latitude]).addTo(map);
 
             item.addEventListener('click', function() {
-                map.flyTo({ center: [longitude, latitude], zoom: 16 });
-                scrollToSelectedItem(this);
+    map.flyTo({ center: [longitude, latitude], zoom: 16 });
+    scrollToSelectedItem(this);
 
-                const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
-                
-                if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
-                    // Close previously open content
-                    currentlyOpenContent.style.display = 'none'; // Hide it
-                    currentlyOpenContent.classList.remove('expanded');
-                }
+    const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
 
-                if (!collectionContent.classList.contains('expanded')) {
-                    collectionContent.style.display = 'block'; // Make it visible
-                    collectionContent.classList.add('expanded');
-                    collectionContent.style.height = '30vh'; // Set height to 30vh for initial reveal
-                } else {
-                    collectionContent.classList.remove('expanded');
-                    setTimeout(() => { // Use a timeout to allow the transition to finish before hiding
-                        if (!collectionContent.classList.contains('expanded')) {
-                            collectionContent.style.display = 'none'; // Hide after transition if collapsed
-                        }
-                    }, 300); // Match this timeout with your CSS transition duration
-                    collectionContent.style.height = ''; // Revert to default
-                }
+    if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
+        // Close previously open content
+        currentlyOpenContent.style.display = 'none';
+        currentlyOpenContent.classList.remove('expanded');
+    }
 
-                currentlyOpenContent = collectionContent.classList.contains('expanded') ? collectionContent : null;
+    if (!collectionContent.classList.contains('expanded')) {
+        collectionContent.style.display = 'block'; // Make it visible
+
+        // Use requestAnimationFrame to ensure the browser has recognized 'display: block'
+        // before proceeding to expand the content for a smooth transition.
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                collectionContent.classList.add('expanded');
+                collectionContent.style.height = '30vh'; // Smoothly transition to 30vh
+            });
+        });
+    } else {
+        collectionContent.classList.remove('expanded');
+        setTimeout(() => {
+            if (!collectionContent.classList.contains('expanded')) {
+                collectionContent.style.display = 'none'; // Hide after transition if collapsed
+            }
+        }, 300); // Ensure this matches your CSS transition duration
+        collectionContent.style.height = ''; // Revert to default after transition
+    }
+
+    currentlyOpenContent = collectionContent.classList.contains('expanded') ? collectionContent : null;
+
 
                 // Update marker icon for selected item
                 const allMarkers = document.querySelectorAll('.custom-marker');
