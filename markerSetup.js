@@ -6,9 +6,8 @@ let currentlyOpenContent = null; // Track the content that is currently open
 
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
-    let markers = [];
 
-    collectionItems.forEach((item, index) => {
+    collectionItems.forEach((item) => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
         const itemId = item.getAttribute('data-item-id');
@@ -20,40 +19,40 @@ export function setupMarkers(map) {
                 anchor: 'bottom'
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            markers.push(marker);
-
             item.addEventListener('click', function() {
                 map.flyTo({ center: [longitude, latitude], zoom: 16 });
                 scrollToSelectedItem(item);
 
-                // This assumes each .tur-collection-item has an associated .tur-content-slide-cnt
-                const contentSlideCnt = document.querySelector(`.tur-content-slide-cnt[data-content-id="${itemId}"]`); // Find the specific .tur-content-slide-cnt for this item
+                const contentSlideCnt = document.querySelector(`.tur-content-slide-cnt[data-content-id="${itemId}"]`);
                 const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
 
-                // Toggle logic for content and slide container visibility
-                if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
-                    currentlyOpenContent.parentElement.style.display = 'none'; // Hide parent .tur-content-slide-cnt of previously open content
-                    currentlyOpenContent.style.height = '20vh'; // Reset size
+                // Ensure both elements exist before attempting to modify their styles
+                if (contentSlideCnt && collectionContent) {
+                    if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
+                        // Assuming the previously opened content is within a content slide container
+                        const prevContentSlideCnt = currentlyOpenContent.closest('.tur-content-slide-cnt');
+                        if (prevContentSlideCnt) {
+                            prevContentSlideCnt.style.display = 'none'; // Hide the slide container of the previously open content
+                        }
+                        currentlyOpenContent.style.height = '20vh'; // Reset size of previously open content
+                    }
+
+                    // Toggle the display and size of the new content and its slide container
+                    if (collectionContent.style.display === 'block') {
+                        collectionContent.style.display = 'none';
+                        collectionContent.style.height = '20vh';
+                        contentSlideCnt.style.display = 'none';
+                    } else {
+                        collectionContent.style.display = 'block';
+                        collectionContent.style.height = '30vh';
+                        contentSlideCnt.style.display = 'block'; // Ensure the specific slide container is shown
+                    }
+
+                    currentlyOpenContent = collectionContent.style.display === 'block' ? collectionContent : null;
                 }
 
-                if (collectionContent.style.display === 'block') {
-                    collectionContent.style.display = 'none';
-                    collectionContent.style.height = '20vh';
-                    contentSlideCnt.style.display = 'none'; // Additionally hide the slide container
-                } else {
-                    collectionContent.style.display = 'block';
-                    collectionContent.style.height = '30vh';
-                    contentSlideCnt.style.display = 'block'; // Show the specific slide container
-                }
-
-                currentlyOpenContent = collectionContent.style.display === 'block' ? collectionContent : null;
-
-                toggleMarkerIcon(markers, index, selectedMarkerIcon, unselectedMarkerIcon);
-                applySelectionStyling(item, collectionItems);
-            });
-
-            marker.getElement().addEventListener('click', () => {
-                item.click();
+                toggleMarkerIcon(markers, selectedMarkerIcon, unselectedMarkerIcon, item);
+                applySelectionStyling(item);
             });
         }
     });
