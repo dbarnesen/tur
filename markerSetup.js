@@ -1,58 +1,50 @@
 import mapboxgl from 'mapbox-gl';
-import { createCustomMarkerElement, scrollToSelectedItem, applySelectionStyling } from './markerUtils.js';
+import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
 import { unselectedMarkerIcon, selectedMarkerIcon } from './config.js';
 
-let currentContent = null; // Track the currently open content element
+let currentContent = null; // Track the currently opened content
 
 export function setupMarkers(map) {
-    const collectionItems = document.querySelectorAll('.tur-collection-item');
+    const itemSummaries = document.querySelectorAll('.tur-collection-item');
 
-    collectionItems.forEach((item) => {
-        const latitude = parseFloat(item.getAttribute('data-lat'));
-        const longitude = parseFloat(item.getAttribute('data-lng'));
-        const itemId = item.getAttribute('data-item-id'); // Link to the content to reveal
+    itemSummaries.forEach((summary) => {
+        const itemId = summary.getAttribute('data-item-id'); // Link to the content to reveal
 
-        if (!isNaN(latitude) && !isNaN(longitude)) {
-            const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
-            const marker = new mapboxgl.Marker({
-                element: markerElement,
-                anchor: 'bottom'
-            }).setLngLat([longitude, latitude]).addTo(map);
+        summary.addEventListener('click', function() {
+            if (this === currentContent) {
+                return; // Ignore the click if this is already the current content
+            }
 
-            item.addEventListener('click', function() {
-                // Map centering and zooming
-                map.flyTo({ center: [longitude, latitude], zoom: 15 });
-                scrollToSelectedItem(this);
+            // Find the corresponding item detail
+            const itemDetail = document.querySelector(`.tur-content-reveal[data-content-id="${itemId}"]`);
 
-                // Apply selection styling
-                applySelectionStyling(item, currentContent);
-
-                // Content reveal logic
-                const itemDetail = document.querySelector(`.tur-content-reveal[data-content-id="${itemId}"]`);
-                if (currentContent && currentContent !== itemDetail) {
-                    // Simulate click to close currently opened content
-                    currentContent.style.display = 'none';
+            if (itemDetail) {
+                // Hide the currently opened content, if any
+                if (currentContent) {
+                    // Assuming your Webflow interactions are tied to click events
+                    currentContent.click(); // Simulate click to close
                 }
-                // Toggle visibility of the new content
-                itemDetail.style.display = itemDetail.style.display === 'block' ? 'none' : 'block';
-                currentContent = itemDetail.style.display === 'block' ? itemDetail : null;
 
-                // Update marker icons
-                marker.getElement().style.backgroundImage = `url(${selectedMarkerIcon})`;
-                collectionItems.forEach((otherItem, idx) => {
-                    if (otherItem !== item) {
-                        const otherMarker = document.querySelector(`[data-item-id="${otherItem.getAttribute('data-item-id')}"] .custom-marker`);
-                        if (otherMarker) {
-                            otherMarker.style.backgroundImage = `url(${unselectedMarkerIcon})`;
-                        }
-                    }
-                });
-            });
+                // Show the new content
+                itemDetail.click(); // Simulate click to open
 
-            // Marker click triggers collection item click
-            marker.getElement().addEventListener('click', () => {
-                item.click();
+                // Update the currently opened content reference
+                currentContent = itemDetail;
+            }
+
+            // Optional: Add any map centering logic here if needed, similar to previous examples
+            const latitude = parseFloat(summary.getAttribute('data-lat'));
+            const longitude = parseFloat(summary.getAttribute('data-lng'));
+            if (!isNaN(latitude) && !isNaN(longitude)) {
+                map.flyTo({ center: [longitude, latitude], zoom: 15 });
+                scrollToSelectedItem(summary);
+            }
+
+            // Marker icon toggle logic, ensuring the correct marker is highlighted
+            document.querySelectorAll('.custom-marker').forEach((elem, idx) => {
+                const markerItemId = itemSummaries[idx].getAttribute('data-item-id');
+                elem.style.backgroundImage = `url(${markerItemId === itemId ? selectedMarkerIcon : unselectedMarkerIcon})`;
             });
-        }
+        });
     });
 }
