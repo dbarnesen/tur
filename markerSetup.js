@@ -2,7 +2,7 @@ import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, toggleMarkerIcon, scrollToSelectedItem, applySelectionStyling } from './markerUtils.js';
 import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 
-let currentlyOpenContent = null; // Track currently open collection content
+let currentlyOpenContent = null; // Track the content that is currently open
 
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
@@ -11,7 +11,7 @@ export function setupMarkers(map) {
     collectionItems.forEach((item, index) => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
-        const itemId = item.getAttribute('data-item-id'); // Assuming each item has a unique ID
+        const itemId = item.getAttribute('data-item-id');
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
             const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
@@ -25,35 +25,35 @@ export function setupMarkers(map) {
             item.addEventListener('click', function() {
                 map.flyTo({ center: [longitude, latitude], zoom: 16 });
                 scrollToSelectedItem(item);
-                const contentSlideCnt = document.querySelector('.tur-content-slide-cnt'); // The slide container
+
+                // This assumes each .tur-collection-item has an associated .tur-content-slide-cnt
+                const contentSlideCnt = document.querySelector(`.tur-content-slide-cnt[data-content-id="${itemId}"]`); // Find the specific .tur-content-slide-cnt for this item
                 const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
 
+                // Toggle logic for content and slide container visibility
                 if (currentlyOpenContent && currentlyOpenContent !== collectionContent) {
-                    // Close the currently open content if another item is selected
-                    currentlyOpenContent.style.display = 'none';
+                    currentlyOpenContent.parentElement.style.display = 'none'; // Hide parent .tur-content-slide-cnt of previously open content
                     currentlyOpenContent.style.height = '20vh'; // Reset size
-                    contentSlideCnt.style.display = 'none'; // Hide the slide container
                 }
 
-                // Toggle the display and size of the new content and the slide container
-                if (collectionContent.style.display === 'block' && currentlyOpenContent === collectionContent) {
+                if (collectionContent.style.display === 'block') {
                     collectionContent.style.display = 'none';
-                    collectionContent.style.height = '20vh'; // Reset size
-                    contentSlideCnt.style.display = 'none'; // Hide the slide container
+                    collectionContent.style.height = '20vh';
+                    contentSlideCnt.style.display = 'none'; // Additionally hide the slide container
                 } else {
                     collectionContent.style.display = 'block';
-                    collectionContent.style.height = '30vh'; // Increase size for visibility
-                    contentSlideCnt.style.display = 'block'; // Show the slide container
+                    collectionContent.style.height = '30vh';
+                    contentSlideCnt.style.display = 'block'; // Show the specific slide container
                 }
 
                 currentlyOpenContent = collectionContent.style.display === 'block' ? collectionContent : null;
 
                 toggleMarkerIcon(markers, index, selectedMarkerIcon, unselectedMarkerIcon);
-                applySelectionStyling(item, collectionItems); // Adjust as needed to reflect the current selection
+                applySelectionStyling(item, collectionItems);
             });
 
             marker.getElement().addEventListener('click', () => {
-                item.click(); // Triggers the click event on the corresponding collection item
+                item.click();
             });
         }
     });
