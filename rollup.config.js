@@ -1,13 +1,14 @@
 import { terser } from 'rollup-plugin-terser';
+
 export default {
   input: 'main.js', // Your entry point
   output: {
     file: 'dist/bundle.js', // Where to output the bundle
-    format: 'iife' // Format: Immediately-Invoked Function Expression (good for web)
-  },
-  globals: {
-      'mapbox-gl': 'mapboxgl'
+    format: 'iife', // Format: Immediately-Invoked Function Expression (good for web)
+    globals: {
+      'mapbox-gl': 'mapboxgl' // Correct placement of globals
     },
-  plugins: [terser()] ,// Minify the output (optional)
-  external: ['mapbox-gl']
+  },
+  plugins: [terser()], // Minify the output (optional)
+  external: ['mapbox-gl'] // Tells Rollup that mapbox-gl is an external dependency
 };
