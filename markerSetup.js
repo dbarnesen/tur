@@ -1,60 +1,64 @@
 import mapboxgl from 'mapbox-gl';
-import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
-import { unselectedMarkerIcon, selectedMarkerIcon, mapboxAccessToken } from './config.js';
+import { createCustomMarkerElement, scrollToSelectedItem, applySelectionStyling } from './markerUtils.js';
+import { unselectedMarkerIcon, selectedMarkerIcon } from './config.js';
 
-// Keep track of the currently selected collection item for styling purposes
-let selectedCollectionItem = null;
+let selectedCollectionItem = null; // Track the currently selected collection item for styling
+let currentOpenContentId = null; // Track the ID of the currently open content for toggling
 
 export function setupMarkers(map) {
     const collectionItems = document.querySelectorAll('.tur-collection-item');
-    collectionItems.forEach((item, index) => {
+
+    collectionItems.forEach((item) => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
-        const kategori = item.getAttribute('data-kategori');
-        const itemId = item.getAttribute('data-item-id');
+        const itemId = item.getAttribute('data-item-id'); // Used for linking with content to reveal
 
-        if (!isNaN(latitude) && !isNaN(longitude) && kategori) {
+        if (!isNaN(latitude) && !isNaN(longitude)) {
             const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
             const marker = new mapboxgl.Marker({
                 element: markerElement,
                 anchor: 'bottom'
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            // Click event for collection items
+            // Event listener for collection item clicks
             item.addEventListener('click', function() {
                 map.flyTo({ center: [longitude, latitude], zoom: 15 });
                 scrollToSelectedItem(this);
 
-                // Apply and manage selection styling
+                // Apply selection styling and manage previous selection
                 if (selectedCollectionItem) {
                     selectedCollectionItem.classList.remove('selected');
                 }
                 this.classList.add('selected');
-                selectedCollectionItem = this; // Update the currently selected collection item
-                
-                // Close currently open content
-                if (currentOpenContentId && currentOpenContentId !== itemId) {
-                    const currentlyOpenContent = document.querySelector(`.tur-content-reveal[data-content-id="${currentOpenContentId}"]`);
-                    currentlyOpenContent.style.display = 'none'; // Hide previous content
+                selectedCollectionItem = this; // Update the reference to the newly selected item
+
+                // Content reveal logic
+                if (currentOpenContentId !== itemId) {
+                    // Hide previously opened content, if any
+                    if (currentOpenContentId) {
+                        const previouslyOpenContent = document.querySelector(`.tur-content-reveal[data-content-id="${currentOpenContentId}"]`);
+                        previouslyOpenContent.style.display = 'none';
+                    }
+                    // Reveal the content associated with the clicked item
+                    const itemDetail = document.querySelector(`.tur-content-reveal[data-content-id="${itemId}"]`);
+                    itemDetail.style.display = 'block';
+                    currentOpenContentId = itemId; // Update the tracker
+                } else {
+                    // If the same item is clicked again, toggle its content visibility
+                    const itemDetail = document.querySelector(`.tur-content-reveal[data-content-id="${itemId}"]`);
+                    itemDetail.style.display = itemDetail.style.display === 'block' ? 'none' : 'block';
+                    currentOpenContentId = itemDetail.style.display === 'block' ? itemId : null;
                 }
 
-                // Find and display the new content, toggle if the same item is clicked
-                const itemDetail = document.querySelector(`.tur-content-reveal[data-content-id="${itemId}"]`);
-                itemDetail.style.display = itemDetail.style.display === 'block' ? 'none' : 'block';
-                currentOpenContentId = itemDetail.style.display === 'block' ? itemId : null;
-
                 // Toggle marker icons
-                marker.getElement().style.backgroundImage = `url(${selectedMarkerIcon})`;
-                document.querySelectorAll('.custom-marker').forEach((elem, idx) => {
-                    if (idx !== index) {
-                        elem.style.backgroundImage = `url(${unselectedMarkerIcon})`;
-                    }
+                document.querySelectorAll('.custom-marker').forEach((markerElem, idx) => {
+                    markerElem.style.backgroundImage = idx === Array.from(collectionItems).indexOf(item) ? `url(${selectedMarkerIcon})` : `url(${unselectedMarkerIcon})`;
                 });
             });
 
-            // Click event for markers
+            // Event listener for marker clicks
             marker.getElement().addEventListener('click', () => {
-                item.click(); // Simulates clicking the associated collection item
+                item.click(); // Simulate click on the associated collection item
             });
         }
     });
