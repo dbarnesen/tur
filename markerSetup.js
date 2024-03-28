@@ -1,6 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
-import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
+import { selectedMarkerIcon, unselectedMarkerIcon, mapStyle } from './config.js';
 
 let currentlyOpenContent = null;
 let currentlySelectedItem = null;
@@ -17,20 +17,29 @@ export function setupMarkers(initialMap) {
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
             const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
-            markerElement.setAttribute('data-category', category);
             const marker = new mapboxgl.Marker({
                 element: markerElement,
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            allMarkers.push({ marker, item, category, element: markerElement, latitude, longitude });
+            allMarkers.push({ marker, item, category, latitude, longitude });
 
             item.addEventListener('click', function() {
-                handleItemSelection(this, longitude, latitude, itemId);
+                if (currentlySelectedItem) {
+                    currentlySelectedItem.classList.remove('selected');
+                    updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
+                }
+                this.classList.add('selected');
+                currentlySelectedItem = this;
+                updateMarkerIcon(this, selectedMarkerIcon);
+                map.flyTo({ center: [longitude, latitude], zoom: 16 });
+                scrollToSelectedItem(this);
+
+                toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
             });
 
             marker.getElement().addEventListener('click', () => {
-                item.click(); // This triggers the selection handling for the item
+                item.click(); // Simulate click on the collection item
             });
         }
     });
@@ -38,19 +47,15 @@ export function setupMarkers(initialMap) {
     setupShowMapButtonListeners();
 }
 
-function handleItemSelection(item, longitude, latitude, itemId) {
-    if (currentlySelectedItem) {
-        currentlySelectedItem.classList.remove('selected');
-        updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
-    }
-    item.classList.add('selected');
-    currentlySelectedItem = item;
-    updateMarkerIcon(item, selectedMarkerIcon);
-    map.flyTo({ center: [longitude, latitude], zoom: 16 });
-    scrollToSelectedItem(item);
-
-    const collectionContent = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
-    toggleCollectionContent(collectionContent);
+function setupShowMapButtonListeners() {
+    document.querySelectorAll('.showmapbutton').forEach(button => {
+        button.addEventListener('click', function() {
+            const filterValue = this.getAttribute('data-kategori');
+            const mapStyleUrl = this.getAttribute('data-mapstyle') || mapStyle;
+            map.setStyle(mapStyleUrl); // This assumes your map style changes don't need to reload markers
+            map.on('style.load', () => filterMarkersAndAdjustMapView(filterValue));
+        });
+    });
 }
 
 function toggleCollectionContent(content) {
@@ -70,7 +75,7 @@ function openCollectionContent(content) {
     content.style.display = 'block';
     setTimeout(() => {
         content.classList.add('expanded');
-        content.style.height = '35vh';
+        content.style.height = '30vh';
     }, 10);
 }
 
@@ -85,57 +90,15 @@ function closeCollectionContent(content) {
 function updateMarkerIcon(item, iconUrl) {
     const markerData = allMarkers.find(m => m.item === item);
     if (markerData) {
-        markerData.element.style.backgroundImage = `url(${iconUrl})`;
+        markerData.marker.getElement().style.backgroundImage = `url(${iconUrl})`;
     }
-}
-
-function filterCollectionItems(filterValue) {
-    document.querySelectorAll('.tur-collection-item').forEach(item => {
-        const itemCategory = item.getAttribute('data-kategori');
-        item.style.display = (filterValue === 'all' || itemCategory === filterValue) ? '' : 'none';
-    });
-}
-
-function setupShowMapButtonListeners() {
-    document.querySelectorAll('.showmapbutton').forEach(button => {
-        button.addEventListener('click', function() {
-            const filterValue = this.getAttribute('data-kategori');
-            const newMapStyle = this.getAttribute('data-mapstyle');
-            
-            if (newMapStyle && map.getStyle().styleURL !== newMapStyle) {
-                map.setStyle(newMapStyle);
-                map.on('style.load', () => {
-                    reAddMarkersToMap(filterValue);
-                });
-            } else {
-                filterCollectionItems(filterValue);
-                filterMarkersAndAdjustMapView(filterValue);
-            }
-        });
-    });
-}
-
-function reAddMarkersToMap(filterValue) {
-    allMarkers.forEach(({ marker, category, element, latitude, longitude }) => {
-        marker.remove(); // Remove existing marker
-        // Re-add marker to the map
-        marker = new mapboxgl.Marker({
-            element,
-            anchor: 'bottom',
-        }).setLngLat([longitude, latitude]).addTo(map);
-
-        // Update marker visibility based on the filter
-        element.style.visibility = (filterValue === 'all' || category === filterValue) ? 'visible' : 'hidden';
-    });
-
-    filterMarkersAndAdjustMapView(filterValue);
 }
 
 function filterMarkersAndAdjustMapView(filterValue) {
     const bounds = new mapboxgl.LngLatBounds();
     allMarkers.forEach(({ marker, category, latitude, longitude }) => {
         const isVisible = filterValue === 'all' || category === filterValue;
-        marker.getElement().style.visibility = isVisible ? 'visible' : 'hidden';
+        marker.getElement().style.display = isVisible ? 'block' : 'none';
         if (isVisible) {
             bounds.extend([longitude, latitude]);
         }
