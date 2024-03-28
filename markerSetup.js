@@ -69,12 +69,20 @@ function setupShowMapButtonListeners() {
 }
 
 function reinitializeMarkers(filterValue) {
-    allMarkers = []; // Clear existing markers
-    initializeMarkers(); // Re-initialize markers
-    filterCollectionItems(filterValue); // Re-apply collection item filtering
-    filterMarkersAndAdjustMapView(filterValue); // Re-apply marker filtering and adjust map view
-}
+    // Clear existing markers to prepare for re-adding them
+    allMarkers.forEach(({marker}) => marker.remove());
+    allMarkers = [];
 
+    // Wait for the style to fully load before re-adding markers
+    map.on('style.load', () => {
+        initializeMarkers();
+        applyFilter(filterValue);
+    });
+}
+function applyFilter(filterValue) {
+    filterCollectionItems(filterValue);
+    filterMarkersAndAdjustMapView(filterValue);
+}
 function toggleCollectionContent(content) {
     if (content !== currentlyOpenContent) {
         if (currentlyOpenContent) {
@@ -120,18 +128,20 @@ function filterCollectionItems(filterValue) {
 
 function filterMarkersAndAdjustMapView(filterValue) {
     const bounds = new mapboxgl.LngLatBounds();
+
     allMarkers.forEach(({ marker, category, latitude, longitude }) => {
         const isVisible = filterValue === 'all' || category === filterValue;
-        marker.getElement().style.visibility = isVisible ? 'visible' : 'hidden';
         if (isVisible) {
-            marker.addTo(map);
-            bounds.extend(marker.getLngLat());
-        } else {
-            marker.remove();
+            bounds.extend([longitude, latitude]);
+            marker.addTo(map); // Make sure this is effective
         }
     });
 
     if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 6000 });
+        map.fitBounds(bounds, {
+            padding: 50,
+            maxZoom: 15,
+            duration: 5000
+        });
     }
 }
