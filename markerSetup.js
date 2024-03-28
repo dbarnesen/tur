@@ -49,7 +49,17 @@ export function setupMarkers(initialMap) {
     initializeMarkers(); // Call to initialize markers
     setupShowMapButtonListeners(); // This will be defined next
 }
+function reinitializeMarkers(filterValue) {
+    // Clear existing markers to prepare for re-adding them
+    allMarkers.forEach(({marker}) => marker.remove());
+    allMarkers = [];
 
+    // Wait for the style to fully load before re-adding markers
+    map.on('style.load', () => {
+        initializeMarkers();
+        applyFilter(filterValue);
+    });
+}
 function setupShowMapButtonListeners() {
     document.querySelectorAll('.showmapbutton').forEach(button => {
         button.addEventListener('click', function() {
@@ -68,17 +78,6 @@ function setupShowMapButtonListeners() {
     });
 }
 
-function reinitializeMarkers(filterValue) {
-    // Clear existing markers to prepare for re-adding them
-    allMarkers.forEach(({marker}) => marker.remove());
-    allMarkers = [];
-
-    // Wait for the style to fully load before re-adding markers
-    map.on('style.load', () => {
-        initializeMarkers();
-        applyFilter(filterValue);
-    });
-}
 function applyFilter(filterValue) {
     filterCollectionItems(filterValue);
     filterMarkersAndAdjustMapView(filterValue);
@@ -126,22 +125,18 @@ function filterCollectionItems(filterValue) {
     });
 }
 
-function filterMarkersAndAdjustMapView(filterValue) {
+function adjustMapView() {
     const bounds = new mapboxgl.LngLatBounds();
-
-    allMarkers.forEach(({ marker, category, latitude, longitude }) => {
-        const isVisible = filterValue === 'all' || category === filterValue;
-        if (isVisible) {
-            bounds.extend([longitude, latitude]);
-            marker.addTo(map); // Make sure this is effective
+    allMarkers.forEach(({ marker, isVisible }) => {
+        if (isVisible) { // Assuming you're tracking visibility in your marker objects
+            bounds.extend(marker.getLngLat());
         }
     });
 
-    if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, {
-            padding: 50,
-            maxZoom: 15,
-            duration: 5000
-        });
-    }
+    if (bounds.isEmpty()) return; // Skip if no markers are visible
+
+    map.fitBounds(bounds, {
+        padding: {top: 10, bottom:25, left: 15, right: 5},
+        duration: 5000, // Adjust as necessary
+    });
 }
