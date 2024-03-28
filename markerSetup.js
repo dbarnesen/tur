@@ -21,8 +21,10 @@ export function setupMarkers(map) {
                 element: markerElement,
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
+            const initialFilter = 'all'; // or any other category you start with
 
-            allMarkers.push({ marker, item, category, element: markerElement }); // Include category in the marker data
+            allMarkers.push({ marker, item, category, element: markerElement });
+            markerElement.style.visibility = (initialFilter === 'all' || initialFilter === category) ? 'visible' : 'hidden';
 
             item.addEventListener('click', function() {
                 // Reset styling for previously selected item
@@ -101,14 +103,15 @@ function filterCollectionItems(filterValue) {
 }
 
 function filterMarkers(filterValue) {
+    console.log(`Filtering markers with category: ${filterValue}`);
     allMarkers.forEach(({ marker, category, element }) => {
         const isVisible = filterValue === 'all' || category === filterValue;
+        element.style.visibility = isVisible ? 'visible' : 'hidden';
         if (isVisible) {
-            element.style.visibility = 'visible';
-            if (!marker.getMap()) marker.addTo(map); // Add back if previously removed
+            if (!marker.getMap()) marker.addTo(map);
         } else {
-            element.style.visibility = 'hidden';
-            marker.remove(); // Remove from map if not visible
+            marker.remove();
         }
     });
 }
+
