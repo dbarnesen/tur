@@ -42,11 +42,14 @@ function initializeMarkers() {
             });
         }
     });
+};
+
 export function setupMarkers(initialMap) {
     map = initialMap;
     initializeMarkers(); // Call to initialize markers
     setupShowMapButtonListeners(); // This will be defined next
 }
+
 function setupShowMapButtonListeners() {
     document.querySelectorAll('.showmapbutton').forEach(button => {
         button.addEventListener('click', function() {
@@ -64,13 +67,13 @@ function setupShowMapButtonListeners() {
         });
     });
 }
+
 function reinitializeMarkers(filterValue) {
     allMarkers = []; // Clear existing markers
     initializeMarkers(); // Re-initialize markers
     filterCollectionItems(filterValue); // Re-apply collection item filtering
     filterMarkersAndAdjustMapView(filterValue); // Re-apply marker filtering and adjust map view
 }
-
 
 function toggleCollectionContent(content) {
     if (content !== currentlyOpenContent) {
