@@ -1,14 +1,13 @@
 import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
-import { selectedMarkerIcon, unselectedMarkerIcon, mapStyle } from './config.js';
+import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 
 let currentlyOpenContent = null;
 let currentlySelectedItem = null;
 let allMarkers = [];
 let map;
 
-export function setupMarkers(initialMap) {
-    map = initialMap;
+function initializeMarkers() {
     document.querySelectorAll('.tur-collection-item').forEach(item => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
@@ -22,7 +21,7 @@ export function setupMarkers(initialMap) {
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            allMarkers.push({ marker, item, category, latitude, longitude });
+            allMarkers.push({ marker, item, category, element: markerElement, latitude, longitude });
 
             item.addEventListener('click', function() {
                 if (currentlySelectedItem) {
@@ -32,7 +31,7 @@ export function setupMarkers(initialMap) {
                 this.classList.add('selected');
                 currentlySelectedItem = this;
                 updateMarkerIcon(this, selectedMarkerIcon);
-                map.flyTo({ center: [longitude, latitude], zoom: 16 });
+                map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
                 scrollToSelectedItem(this);
 
                 toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
@@ -43,20 +42,35 @@ export function setupMarkers(initialMap) {
             });
         }
     });
-
-    setupShowMapButtonListeners();
+export function setupMarkers(initialMap) {
+    map = initialMap;
+    initializeMarkers(); // Call to initialize markers
+    setupShowMapButtonListeners(); // This will be defined next
 }
-
 function setupShowMapButtonListeners() {
     document.querySelectorAll('.showmapbutton').forEach(button => {
         button.addEventListener('click', function() {
             const filterValue = this.getAttribute('data-kategori');
-            const mapStyleUrl = this.getAttribute('data-mapstyle') || mapStyle;
-            map.setStyle(mapStyleUrl); // This assumes your map style changes don't need to reload markers
-            map.on('style.load', () => filterMarkersAndAdjustMapView(filterValue));
+            const mapStyleUrl = this.getAttribute('data-mapstyle');
+
+            if (mapStyleUrl && map.getStyle().styleURL !== mapStyleUrl) {
+                map.setStyle(mapStyleUrl).on('style.load', () => {
+                    reinitializeMarkers(filterValue);
+                });
+            } else {
+                filterCollectionItems(filterValue);
+                filterMarkersAndAdjustMapView(filterValue);
+            }
         });
     });
 }
+function reinitializeMarkers(filterValue) {
+    allMarkers = []; // Clear existing markers
+    initializeMarkers(); // Re-initialize markers
+    filterCollectionItems(filterValue); // Re-apply collection item filtering
+    filterMarkersAndAdjustMapView(filterValue); // Re-apply marker filtering and adjust map view
+}
+
 
 function toggleCollectionContent(content) {
     if (content !== currentlyOpenContent) {
@@ -90,21 +104,31 @@ function closeCollectionContent(content) {
 function updateMarkerIcon(item, iconUrl) {
     const markerData = allMarkers.find(m => m.item === item);
     if (markerData) {
-        markerData.marker.getElement().style.backgroundImage = `url(${iconUrl})`;
+        markerData.element.style.backgroundImage = `url(${iconUrl})`;
     }
+}
+
+function filterCollectionItems(filterValue) {
+    document.querySelectorAll('.tur-collection-item').forEach(item => {
+        const itemCategory = item.getAttribute('data-kategori');
+        item.style.display = (filterValue === 'all' || itemCategory === filterValue) ? '' : 'none';
+    });
 }
 
 function filterMarkersAndAdjustMapView(filterValue) {
     const bounds = new mapboxgl.LngLatBounds();
     allMarkers.forEach(({ marker, category, latitude, longitude }) => {
         const isVisible = filterValue === 'all' || category === filterValue;
-        marker.getElement().style.display = isVisible ? 'block' : 'none';
+        marker.getElement().style.visibility = isVisible ? 'visible' : 'hidden';
         if (isVisible) {
-            bounds.extend([longitude, latitude]);
+            marker.addTo(map);
+            bounds.extend(marker.getLngLat());
+        } else {
+            marker.remove();
         }
     });
 
     if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 5000 });
+        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 6000 });
     }
 }
