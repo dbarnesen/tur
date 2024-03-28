@@ -7,6 +7,12 @@ let currentlySelectedItem = null;
 let allMarkers = [];
 let map;
 
+export function setupMarkers(initialMap) {
+    map = initialMap;
+    initializeMarkers();
+    setupShowMapButtonListeners();
+}
+
 function initializeMarkers() {
     document.querySelectorAll('.tur-collection-item').forEach(item => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
@@ -33,7 +39,6 @@ function initializeMarkers() {
                 updateMarkerIcon(this, selectedMarkerIcon);
                 map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
                 scrollToSelectedItem(this);
-
                 toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
             });
 
@@ -42,24 +47,8 @@ function initializeMarkers() {
             });
         }
     });
-};
-
-export function setupMarkers(initialMap) {
-    map = initialMap;
-    initializeMarkers(); // Call to initialize markers
-    setupShowMapButtonListeners(); // This will be defined next
 }
-function reinitializeMarkers(filterValue) {
-    // Clear existing markers to prepare for re-adding them
-    allMarkers.forEach(({marker}) => marker.remove());
-    allMarkers = [];
 
-    // Wait for the style to fully load before re-adding markers
-    map.on('style.load', () => {
-        initializeMarkers();
-        applyFilter(filterValue);
-    });
-}
 function setupShowMapButtonListeners() {
     document.querySelectorAll('.showmapbutton').forEach(button => {
         button.addEventListener('click', function() {
@@ -67,7 +56,7 @@ function setupShowMapButtonListeners() {
             const mapStyleUrl = this.getAttribute('data-mapstyle');
 
             if (mapStyleUrl && map.getStyle().styleURL !== mapStyleUrl) {
-                map.setStyle(mapStyleUrl).on('style.load', () => {
+                map.setStyle(mapStyleUrl).once('style.load', () => {
                     reinitializeMarkers(filterValue);
                 });
             } else {
@@ -76,6 +65,13 @@ function setupShowMapButtonListeners() {
             }
         });
     });
+}
+
+function reinitializeMarkers(filterValue) {
+    allMarkers.forEach(({ marker }) => marker.remove());
+    allMarkers = [];
+    initializeMarkers(); // This function needs to correctly re-add markers
+    applyFilter(filterValue);
 }
 
 function applyFilter(filterValue) {
@@ -99,7 +95,7 @@ function openCollectionContent(content) {
     content.style.display = 'block';
     setTimeout(() => {
         content.classList.add('expanded');
-        content.style.height = '30vh';
+        content.style.height = '35vh';
     }, 10);
 }
 
@@ -125,18 +121,16 @@ function filterCollectionItems(filterValue) {
     });
 }
 
-function adjustMapView() {
+function filterMarkersAndAdjustMapView(filterValue) {
+    // Adjusts the map view to fit all visible markers after filtering
     const bounds = new mapboxgl.LngLatBounds();
-    allMarkers.forEach(({ marker, isVisible }) => {
-        if (isVisible) { // Assuming you're tracking visibility in your marker objects
-            bounds.extend(marker.getLngLat());
+    allMarkers.forEach(({ marker, category }) => {
+        if (filterValue === 'all' || category === filterValue) {
+            bounds.extend(new mapboxgl.LngLat(marker.getLngLat().lng, marker.getLngLat().lat));
         }
     });
 
-    if (bounds.isEmpty()) return; // Skip if no markers are visible
-
-    map.fitBounds(bounds, {
-        padding: {top: 10, bottom:25, left: 15, right: 5},
-        duration: 5000, // Adjust as necessary
-    });
+    if (!bounds.isEmpty()) {
+        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 5000 });
+    }
 }
