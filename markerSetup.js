@@ -12,6 +12,7 @@ export function setupMap() {
         button.addEventListener('click', function() {
             const filterValue = this.getAttribute('data-kategori');
             const mapStyle = this.getAttribute('data-mapstyle');
+            console.log(`Button clicked with map style: ${mapStyle} and filter: ${filterValue}`);
 
             // Initialize the map if it's not already created
             if (!map) {
@@ -96,13 +97,14 @@ function filterMarkersAndAdjustMapView(filterValue) {
     const bounds = new mapboxgl.LngLatBounds();
     allMarkers.forEach(({ marker, category, latitude, longitude }) => {
         marker.getElement().style.visibility = isVisible ? 'visible' : 'hidden';
+        console.log(`Setting marker visibility to ${isVisible ? 'visible' : 'hidden'} for category ${category}`);
         if (isVisible) {
             marker.addTo(map);
             bounds.extend(marker.getLngLat());
         } else {
             marker.remove();
         }
-        console.log(`Setting marker visibility to ${isVisible ? 'visible' : 'hidden'} for category ${category}`);
+        console.log(`Filtering markers with category: ${filterValue}`);
     });
 }
 function toggleCollectionContent(content) {
