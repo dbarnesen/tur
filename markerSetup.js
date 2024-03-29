@@ -50,7 +50,7 @@ export function setupMarkers() {
             const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
             const marker = new mapboxgl.Marker({ element: markerElement, anchor: 'bottom' }).setLngLat([longitude, latitude]).addTo(map);
 
-            allMarkers.push({ marker, itemId, category });
+            allMarkers.push({ marker, item, category, element: markerElement, latitude, longitude });
 
             // Handle click event for collection items and markers, ensuring proper interaction
             item.addEventListener('click', () => handleClickEvent(item, latitude, longitude));
