@@ -137,7 +137,13 @@ function closeCollectionContent(content) {
 
 function updateMarkerIcon(item, iconUrl) {
     const markerData = allMarkers.find(m => m.item === item);
-    if (markerData) {
-        markerData.element.style.backgroundImage = `url(${iconUrl})`;
+    if (!markerData) {
+        console.error("Marker data not found for the item", item);
+        return;
     }
+    if (!markerData.element || !markerData.element.style) {
+        console.error("Marker element or style property is undefined", markerData);
+        return;
+    }
+    markerData.element.style.backgroundImage = `url(${iconUrl})`;
 }
