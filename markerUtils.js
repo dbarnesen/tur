@@ -18,7 +18,7 @@ export function toggleMarkerIcon(markers, selectedIndex) {
 }
 
 export function scrollToSelectedItem(item) {
-    item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center', scale: '1.1', boxShadow: '1px 1px 5px gray'});
+    item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center'});
 }
 
 export function applySelectionStyling(item, selectedCollectionItem) {
