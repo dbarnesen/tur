@@ -2,40 +2,50 @@ import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
 import { selectedMarkerIcon, unselectedMarkerIcon, mapboxAccessToken, defaultCenter, defaultZoom } from './config.js';
 
-let map;
+// Global variables to track state
+let map = null;
 let allMarkers = [];
 
-// Initializes or updates the map based on selected tour
-function initOrUpdateMap(mapStyle, center, zoom) {
+// Initialize or update the map and markers based on selected tour
+function initOrUpdateMap(selectedStyle, selectedCategory) {
+    // Setup map only if it doesn't exist
     if (!map) {
-        console.log("Initializing map for the first time with style:", mapStyle);
         mapboxgl.accessToken = mapboxAccessToken;
         map = new mapboxgl.Map({
             container: 'turmap',
-            style: mapStyle,
+            style: selectedStyle,
             center: defaultCenter,
             zoom: defaultZoom
         });
-        map.on('load', () => {
+        
+        map.on('load', function() {
             setupMarkers();
+            filterMarkersAndCollectionItems(selectedCategory);
         });
-    } else if (map.getStyle().styleURL !== mapStyle) {
-        console.log("Updating map style to:", mapStyle);
-        map.setStyle(mapStyle).on('style.load', () => {
-            setupMarkers(); // Re-setup markers after style change
-        });
+    } else {
+        // If map exists but new style is selected, update the style
+        if (map.getStyle().styleURL !== selectedStyle) {
+            map.setStyle(selectedStyle).on('style.load', function() {
+                // Reinitialize markers and apply filters after style is loaded
+                setupMarkers();
+                filterMarkersAndCollectionItems(selectedCategory);
+            });
+        } else {
+            // Apply filters directly if style hasn't changed
+            filterMarkersAndCollectionItems(selectedCategory);
+        }
     }
 }
 
-// Setup markers and apply event listeners to collection items and markers
-export function setupMarkers() {
-    console.log("Setting up markers...");
-    allMarkers.forEach(marker => marker.remove()); // Clear existing markers
-    allMarkers = []; // Reset markers array
+// Function to setup markers initially or after map style change
+function setupMarkers() {
+    // Remove any existing markers first
+    allMarkers.forEach(marker => marker.remove());
+    allMarkers = [];
 
     document.querySelectorAll('.tur-collection-item').forEach(item => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
-        const longitude = parseFloat(item.getAttribute('data-lg'));
+        const longitude = parseFloat(item.getAttribute('data-lng'));
         const category = item.getAttribute('data-kategori');
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
@@ -45,25 +55,47 @@ export function setupMarkers() {
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            allMarkers.push({ marker, category, item });
+            allMarkers.push({ marker, item, category });
 
-            item.addEventListener('click', () => {
-                console.log(`Collection item clicked, category: ${category}`);
-                if (scrollToSelectedItem) scrollToSelectedItem(item);
-                toggleCollectionContent(item);
+            // Add click event listener for each collection item
+            item.addEventListener('click', function() {
+                scrollToSelectedItem(item);
+                // Additional logic for handling item selection
             });
 
-            marker.getElement().addEventListener('click', () => {
-                console.log("Marker clicked, simulating item click.");
-                item.click();
+            // Add click event listener for marker
+            marker.getElement().addEventListener('click', function() {
+                item.click(); // Trigger collection item click
             });
         }
     });
 }
 
-// Toggle visibility and expansion of collection content
-function toggleCollectionContent(selectedItem) {
-    console.log(`Toggling collection content for: ${selectedItem.getAttribute('data-item-id')}`);
+// Function to apply category filter to markers and collection items
+function filterMarkersAndCollectionItems(selectedCategory) {
+    document.querySelectorAll('.tur-collection-item').forEach(item => {
+        item.style.display = item.getAttribute('data-kategori') === selectedCategory ? 'block' : 'none';
+    });
+
+    allMarkers.forEach(({ marker, category }) => {
+        const isVisible = category === selectedCategory;
+        marker.getElement().style.display = isVisible ? 'block' : 'none';
+        // Optionally adjust marker visibility or re-add to map based on visibility
+    });
+
+    // Adjust map view to fit visible markers if necessary
+}
+
+// Event listener setup for showmapbutton clicks
+document.querySelectorAll('.showmapbutton').forEach(button => {
+    button.addEventListener('click', function() {
+        const selectedCategory = this.getAttribute('data-kategori');
+        const selectedStyle = this.getAttribute('data-mapstyle') || 'default_style';
+        initOrUpdateMap(selectedStyle, selectedCategory);
+    });
+});
+
+function toggleCollectionContent(content) {
     if (content !== currentlyOpenContent) {
         if (currentlyOpenContent) {
             closeCollectionContent(currentlyOpenContent);
@@ -73,49 +105,6 @@ function toggleCollectionContent(selectedItem) {
     } else {
         closeCollectionContent(content);
         currentlyOpenContent = null;
-    }
-}
-
-// Apply filters to collection items and markers based on 'data-kategori'
-document.querySelectorAll('.showmapbutton').forEach(button => {
-    button.addEventListener('click', function() {
-        const category = this.getAttribute('data-kategori');
-        const mapStyle = this.getAttribute('data-mapstyle') || 'default_map_style';
-        console.log(`Showmapbutton clicked, category: ${category}, mapStyle: ${mapStyle}`);
-
-        initOrUpdateMap(mapStyle, defaultCenter, defaultZoom);
-        applyFilters(category);
-    });
-});
-
-function applyFilters(category) {
-    console.log(`Applying filters for category: ${category}`);
-    // Filter collection items
-    document.querySelectorAll('.tur-collection-item').forEach(item => {
-        item.style.display = item.getAttribute('data-kategori') === category ? 'block' : 'none';
-    });
-
-    // Filter markers and adjust map view
-    filterMarkersAndAdjustMapView(category);
-}
-
-function filterMarkersAndAdjustMapView(category) {
-    console.log(`Filtering markers for category: ${category}`);
-    const bounds = new mapboxgl.LngLatBounds();
-    allMarkers.forEach(({ marker, item }) => {
-        const isVisible = item.getAttribute('data-kategori') === category;
-        marker.getElement().style.visibility = isVisible ? 'visible' : 'hidden';
-        if (isVisible) {
-            marker.addTo(map);
-            bounds.extend(marker.getLngLat());
-        } else {
-            marker.remove();
-        }
-    });
-
-    if (!bounds.isEmpty()) {
-        console.log("Adjusting map view to fit markers.");
-        map.fitBounds(bounds, { padding: 50, duration: 5000 });
     }
 }
 
@@ -133,4 +122,11 @@ function closeCollectionContent(content) {
         content.style.height = '0';
         setTimeout(() => content.style.display = 'none', 300);
     }, 10);
+}
+
+function updateMarkerIcon(item, iconUrl) {
+    const markerData = allMarkers.find(m => m.item === item);
+    if (markerData) {
+        markerData.element.style.backgroundImage = `url(${iconUrl})`;
+    }
 }
