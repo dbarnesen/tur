@@ -43,7 +43,7 @@ export function setupMarkers() {
     document.querySelectorAll('.tur-collection-item').forEach(item => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
-        const itemId = item.getAttribute('data-item-id');
+        const item = item.getAttribute('data-item-id');
         const category = item.getAttribute('data-kategori');
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
@@ -68,7 +68,7 @@ function handleClickEvent(item, latitude, longitude) {
     map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
 
     // Show associated content for the collection item
-    const itemId = item.getAttribute('data-item-id');
+    const item = item.getAttribute('data-item-id');
     const contentId = item.getAttribute('data-content-id');
     const content = document.querySelector(`.tur-collection-content[data-content-id="${contentId}"]`);
     toggleCollectionContent(content);
@@ -102,8 +102,8 @@ document.querySelectorAll('.showmapbutton').forEach(button => {
 });
 
 function toggleCollectionContent(item) {
-    const itemId = item.getAttribute('data-item-id');
-    const content = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
+    const item = item.getAttribute('data-item-id');
+    const content = document.querySelector(`.tur-collection-content[data-content-id="${item}"]`);
     if (content) {
         if (!content.classList.contains('expanded')) {
             openCollectionContent(content);
