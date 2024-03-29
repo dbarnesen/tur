@@ -38,7 +38,7 @@ function initOrUpdateMap(selectedStyle, selectedCategory) {
 }
 
 // Function to setup markers initially or after map style change
-function setupMarkers() {
+export function setupMarkers() {
     // Remove any existing markers first
     allMarkers.forEach(marker => marker.remove());
     allMarkers = [];
