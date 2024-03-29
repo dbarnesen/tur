@@ -138,4 +138,3 @@ function updateMarkerIcon(item, iconUrl) {
 if (!bounds.isEmpty()) {
         map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 5000 });
     }
-}
