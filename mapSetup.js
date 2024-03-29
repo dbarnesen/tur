@@ -1,9 +1,12 @@
 import mapboxgl from 'mapbox-gl';
 import { mapboxAccessToken, mapStyle, defaultCenter, defaultZoom } from './config.js';
 
+// Define map at a higher scope so it's accessible by all functions in this module
+let map;
+
 export function initializeMap() {
     mapboxgl.accessToken = mapboxAccessToken;
-    const map = new mapboxgl.Map({
+    map = new mapboxgl.Map({
         container: 'turmap',
         style: mapStyle,
         center: defaultCenter,
@@ -25,10 +28,10 @@ export function initializeMap() {
 
     return map;
 }
+
 export function changeMapStyle(styleUrl) {
     if (map && styleUrl) {
         map.setStyle(styleUrl);
-        // Remember, setting a new style removes all sources and layers not originally in the style,
-        // so you might need to re-add them.
+        // Note: You may need to re-add markers or layers after changing the style
     }
 }
