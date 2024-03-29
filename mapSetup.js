@@ -1,5 +1,5 @@
 import mapboxgl from 'mapbox-gl';
-import { mapboxAccessToken, mapStyle, defaultCenter, defaultZoom } from './config.js';
+import { mapboxAccessToken, mapStyle, defaultCenter, defaultZoom, defaultPitch } from './config.js';
 
 // Define map at a higher scope so it's accessible by all functions in this module
 let map;
@@ -11,7 +11,7 @@ export function initializeMap() {
         style: mapStyle,
         center: defaultCenter,
         zoom: defaultZoom,
-        pitch: 54,
+        pitch: defaultPitch,
     });
 
     map.addControl(new mapboxgl.NavigationControl(), 'top-right');
