@@ -4,8 +4,8 @@
     {
       "type": "Feature",
       "properties": {
-        "graphic": "whale1"
-        "scalerank: "1"
+        "graphic": "whale1",
+        "scalerank": 1
       },
       "geometry": {
         "type": "Point",
