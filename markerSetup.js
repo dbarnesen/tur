@@ -1,4 +1,4 @@
-//ver 2254290324
+//ver 2306290324
 import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
 import { mapStyles, selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
