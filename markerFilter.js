@@ -19,6 +19,6 @@ export function filterMarkersAndAdjustMapView(map, allMarkers, filterValue) {
     });
 
     if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 6000 });
+        map.fitBounds(bounds, { padding: 50, maxZoom: 15, pitch: 54, duration: 6000 });
     }
 }
