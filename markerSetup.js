@@ -59,8 +59,17 @@ export function setupMarkers() {
 
             // Add click event listener for each collection item
             item.addEventListener('click', function() {
+                if (currentlySelectedItem) {
+                    currentlySelectedItem.classList.remove('selected');
+                    updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
+                }
+                this.classList.add('selected');
+                currentlySelectedItem = this;
+                updateMarkerIcon(this, selectedMarkerIcon);
+                map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
                 scrollToSelectedItem(item);
                 // Additional logic for handling item selection
+                toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
             });
 
             // Add click event listener for marker
