@@ -48,6 +48,8 @@ export function setupMarkers(initialMap) {
     document.querySelectorAll('.showmapbutton').forEach(button => {
         button.addEventListener('click', function() {
             const filterValue = this.getAttribute('data-kategori');
+            const styleUrl = mapStyles[category] || mapStyles.default; // Fallback to default style if no match
+    changeMapStyle(styleUrl);
             filterCollectionItems(filterValue); // This function might not need adjustment if it works solely with DOM elements
             filterMarkersAndAdjustMapView(map, allMarkers, filterValue); // Pass map, allMarkers, and filterValue
         });
