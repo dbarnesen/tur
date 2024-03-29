@@ -2,32 +2,53 @@ import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
 import { selectedMarkerIcon, unselectedMarkerIcon, mapboxAccessToken, defaultCenter, defaultZoom } from './config.js';
 
-let map;
+let currentlyOpenContent = null;
+let currentlySelectedItem = null;
 let allMarkers = [];
+let map;
 
-// Function to initialize or update the map based on a selected tour
-function initOrUpdateMap(mapStyle, center, zoom) {
-    if (!map) {
-        mapboxgl.accessToken = mapboxAccessToken;
-        map = new mapboxgl.Map({
-            container: 'turmap',
-            style: mapStyle,
-            center: center,
-            zoom: zoom
+export function setupMap() {
+    document.querySelectorAll('.showmapbutton').forEach(button => {
+        button.addEventListener('click', function() {
+            const filterValue = this.getAttribute('data-kategori');
+            const mapStyle = this.getAttribute('data-mapstyle');
+
+            // Initialize the map if it's not already created
+            if (!map) {
+                mapboxgl.accessToken = mapboxAccessToken;
+                map = new mapboxgl.Map({
+                    container: 'turmap',
+                    style: mapStyle,
+                    center: defaultCenter,
+                    zoom: defaultZoom
+                });
+
+                map.on('load', () => {
+                    setupMarkers();
+                    applyFilters(filterValue);
+                });
+            } else if (map.getStyle().styleURL !== mapStyle) {
+                // If map exists but style needs to change
+                map.setStyle(mapStyle).on('style.load', () => {
+                    setupMarkers(); // Re-setup markers for the new style
+                    applyFilters(filterValue);
+                });
+            } else {
+                // If map and style are already set
+                applyFilters(filterValue);
+            }
         });
-        map.on('load', () => {
-            setupMarkers();
-        });
-    } else {
-        map.setStyle(mapStyle);
-    }
+    });
 }
 
-// Function to setup markers
-function setupMarkers() {
+export function setupMarkers() {
+    allMarkers.forEach(marker => marker.remove()); // Remove existing markers
+    allMarkers = []; // Clear the markers array
+
     document.querySelectorAll('.tur-collection-item').forEach(item => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
+        const itemId = item.getAttribute('data-item-id');
         const category = item.getAttribute('data-kategori');
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
@@ -37,85 +58,84 @@ function setupMarkers() {
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
 
-            allMarkers.push({ marker, category, item });
+            allMarkers.push({ marker, item, category, element: markerElement });
 
-            // Click event for each collection item
-            item.addEventListener('click', () => {
-                map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
+            item.onclick = () => {
+                if (currentlySelectedItem) {
+                    currentlySelectedItem.classList.remove('selected');
+                    updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
+                }
+                item.classList.add('selected');
+                currentlySelectedItem = item;
+                updateMarkerIcon(item, selectedMarkerIcon);
+                map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 1000 });
                 scrollToSelectedItem(item);
-                toggleCollectionItem(item);
-            });
+                toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
+            };
 
-            marker.getElement().addEventListener('click', () => {
+            marker.getElement().onclick = () => {
                 item.click();
-            });
+            };
         }
     });
 }
 
-// Handle collection item toggling
-function toggleCollectionItem(selectedItem) {
-    const contentId = selectedItem.getAttribute('data-content-id');
-    const content = document.querySelector(`.tur-collection-content[data-content-id="${contentId}"]`);
-    const isExpanded = content.classList.contains('expanded');
-
-    // Close any open items
-    document.querySelectorAll('.tur-collection-content.expanded').forEach(el => {
-        el.classList.remove('expanded');
-        el.style.height = '0';
-        setTimeout(() => el.style.display = 'none', 300);
-    });
-
-    if (!isExpanded) {
-        content.style.display = 'block';
-        setTimeout(() => {
-            content.classList.add('expanded');
-            content.style.height = '30vh';
-        }, 10);
-    }
-}
-
-// Apply filters based on 'data-kategori'
-document.querySelectorAll('.showmapbutton').forEach(button => {
-    button.addEventListener('click', function() {
-        const mapStyle = this.getAttribute('data-mapstyle') || 'default_map_style';
-        const category = this.getAttribute('data-kategori');
-
-        initOrUpdateMap(mapStyle, defaultCenter, defaultZoom);
-        applyFilters(category);
-    });
-});
-
-function applyFilters(category) {
-    // Filter collection items
+function applyFilters(filterValue) {
     document.querySelectorAll('.tur-collection-item').forEach(item => {
-        item.style.display = item.getAttribute('data-kategori') === category || category === 'all' ? 'block' : 'none';
+        const itemCategory = item.getAttribute('data-kategori');
+        item.style.display = (filterValue === 'all' || itemCategory === filterValue) ? '' : 'none';
     });
-
-    // Filter markers
-    allMarkers.forEach(({ marker, item }) => {
-        if (item.getAttribute('data-kategori') === category || category === 'all') {
-            if (!marker.getMap()) {
-                marker.addTo(map); // Add marker to map if it's not already added
-            }
-        } else {
-            marker.remove(); // Remove marker from map
-        }
-    });
-
-    adjustMapViewToFitMarkers();
 }
 
-function adjustMapViewToFitMarkers() {
+function filterMarkersAndAdjustMapView(filterValue) {
     const bounds = new mapboxgl.LngLatBounds();
-    allMarkers.forEach(({ marker, item }) => {
-        if (item.getAttribute('data-kategori') === category && item.style.display !== 'none') {
+    allMarkers.forEach(({ marker, category, latitude, longitude }) => {
+        const isVisible = filterValue === 'all' || category === filterValue;
+        marker.getElement().style.visibility = isVisible ? 'visible' : 'hidden';
+        if (isVisible) {
+            marker.addTo(map);
             bounds.extend(marker.getLngLat());
+        } else {
+            marker.remove();
         }
     });
-
-    if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 50, duration: 5000 });
+}
+function toggleCollectionContent(content) {
+    if (content !== currentlyOpenContent) {
+        if (currentlyOpenContent) {
+            closeCollectionContent(currentlyOpenContent);
+        }
+        openCollectionContent(content);
+        currentlyOpenContent = content;
+    } else {
+        closeCollectionContent(content);
+        currentlyOpenContent = null;
     }
 }
-export { setupMarkers };
+
+function openCollectionContent(content) {
+    content.style.display = 'block';
+    setTimeout(() => {
+        content.classList.add('expanded');
+        content.style.height = '30vh';
+    }, 10);
+}
+
+function closeCollectionContent(content) {
+    content.classList.remove('expanded');
+    setTimeout(() => {
+        content.style.height = '0';
+        setTimeout(() => content.style.display = 'none', 300);
+    }, 10);
+}
+
+function updateMarkerIcon(item, iconUrl) {
+    const markerData = allMarkers.find(m => m.item === item);
+    if (markerData) {
+        markerData.element.style.backgroundImage = `url(${iconUrl})`;
+    }
+}
+if (!bounds.isEmpty()) {
+        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 5000 });
+    }
+}
