@@ -44,7 +44,6 @@ export function setupMap() {
 }
 
 export function setupMarkers() {
-    console.log(`Adding marker at [${longitude}, ${latitude}] with category ${category}`);
 
     allMarkers.forEach(marker => marker.remove()); // Remove existing markers
     allMarkers = []; // Clear the markers array
@@ -63,7 +62,7 @@ export function setupMarkers() {
             }).setLngLat([longitude, latitude]).addTo(map);
 
             allMarkers.push({ marker, item, category, element: markerElement });
-
+ console.log(`Adding marker at [${longitude}, ${latitude}] with category ${category}`);
             item.onclick = () => {
                 if (currentlySelectedItem) {
                     currentlySelectedItem.classList.remove('selected');
