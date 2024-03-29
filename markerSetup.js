@@ -68,6 +68,7 @@ function handleClickEvent(item, latitude, longitude) {
     map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
 
     // Show associated content for the collection item
+    const itemId = item.getAttribute('data-item-id');
     const contentId = item.getAttribute('data-content-id');
     const content = document.querySelector(`.tur-collection-content[data-content-id="${contentId}"]`);
     toggleCollectionContent(content);
@@ -101,8 +102,8 @@ document.querySelectorAll('.showmapbutton').forEach(button => {
 });
 
 function toggleCollectionContent(item) {
+    const itemId = item.getAttribute('data-item-id');
     const content = document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`);
-    
     if (content) {
         if (!content.classList.contains('expanded')) {
             openCollectionContent(content);
