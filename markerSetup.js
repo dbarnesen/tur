@@ -28,7 +28,7 @@ function initOrUpdateMap(mapStyle, center, zoom) {
 }
 
 // Setup markers and apply event listeners to collection items and markers
-function setupMarkers() {
+export function setupMarkers() {
     console.log("Setting up markers...");
     allMarkers.forEach(marker => marker.remove()); // Clear existing markers
     allMarkers = []; // Reset markers array
