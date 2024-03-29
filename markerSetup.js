@@ -116,4 +116,4 @@ function adjustMapViewToFitMarkers() {
         map.fitBounds(bounds, { padding: 50, duration: 5000 });
     }
 }
-export default setupMarkers;
+export { setupMarkers };
