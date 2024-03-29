@@ -59,6 +59,11 @@ export function setupMarkers() {
     });
 }
 function handleClickEvent(item, latitude, longitude) {
+    // Before using 'item', let's ensure it's not null
+    if (!item) {
+        console.error("Item is null, can't proceed with handleClickEvent.");
+        return;
+    }
     const itemId = item.getAttribute('data-item-id');
     // Update marker icons
     updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
