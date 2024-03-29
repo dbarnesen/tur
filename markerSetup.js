@@ -2,6 +2,7 @@ import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
 import { mapStyles, selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 import { filterCollectionItems, filterMarkersAndAdjustMapView } from './markerFilter.js';
+import { changeMapStyle } from './mapSetup.js';
 
 let currentlyOpenContent = null;
 let currentlySelectedItem = null;
