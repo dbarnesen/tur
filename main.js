@@ -8,7 +8,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const map = initializeMap();
     const markers = setupMarkers(map); // Pass map to setup markers
     setupSwipeInteractions();
-
-    // Additional setup for filtering and content reveal based on interactions with markers
-    // would go here, leveraging the markers array and other configurations as needed.
 });
