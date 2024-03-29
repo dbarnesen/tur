@@ -25,3 +25,8 @@ export function initializeMap() {
 
     return map;
 }
+export function changeMapStyle(styleUrl) {
+  map.setStyle(styleUrl);
+  // Note: Changing the style will remove all sources and layers except those included in the style.
+  // You might need to re-add markers or any custom layers after changing the style.
+}
