@@ -32,7 +32,7 @@ export function setupMarkers(initialMap) {
                 this.classList.add('selected');
                 currentlySelectedItem = this;
                 updateMarkerIcon(this, selectedMarkerIcon);
-                map.flyTo({ center: [longitude, latitude], zoom: 16 });
+                map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 1000 });
                 scrollToSelectedItem(this);
 
                 toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
@@ -110,6 +110,6 @@ function filterMarkersAndAdjustMapView(filterValue) {
     });
 
     if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 2000 });
+        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 5000 });
     }
 }
