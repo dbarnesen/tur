@@ -64,8 +64,16 @@ function setupMarkers() {
 // Toggle visibility and expansion of collection content
 function toggleCollectionContent(selectedItem) {
     console.log(`Toggling collection content for: ${selectedItem.getAttribute('data-item-id')}`);
-    // Logic to expand or collapse the associated content
-    // similar to your existing toggleCollectionContent function
+    if (content !== currentlyOpenContent) {
+        if (currentlyOpenContent) {
+            closeCollectionContent(currentlyOpenContent);
+        }
+        openCollectionContent(content);
+        currentlyOpenContent = content;
+    } else {
+        closeCollectionContent(content);
+        currentlyOpenContent = null;
+    }
 }
 
 // Apply filters to collection items and markers based on 'data-kategori'
@@ -108,19 +116,6 @@ function filterMarkersAndAdjustMapView(category) {
     if (!bounds.isEmpty()) {
         console.log("Adjusting map view to fit markers.");
         map.fitBounds(bounds, { padding: 50, duration: 5000 });
-    }
-}
-
-function toggleCollectionContent(content) {
-    if (content !== currentlyOpenContent) {
-        if (currentlyOpenContent) {
-            closeCollectionContent(currentlyOpenContent);
-        }
-        openCollectionContent(content);
-        currentlyOpenContent = content;
-    } else {
-        closeCollectionContent(content);
-        currentlyOpenContent = null;
     }
 }
 
