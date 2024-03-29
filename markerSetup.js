@@ -53,12 +53,13 @@ export function setupMarkers() {
             allMarkers.push({ marker, itemId, category });
 
             // Handle click event for collection items and markers, ensuring proper interaction
-            item.addEventListener('click', () => handleClickEvent(itemId, latitude, longitude));
+            item.addEventListener('click', () => handleClickEvent(item, latitude, longitude));
             marker.getElement().addEventListener('click', () => item.click());
         }
     });
 }
-function handleClickEvent(itemId, latitude, longitude) {
+function handleClickEvent(item, latitude, longitude) {
+    const itemId = item.getAttribute('data-item-id');
     // Update marker icons
     updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
     currentlySelectedItem = item;
@@ -68,7 +69,6 @@ function handleClickEvent(itemId, latitude, longitude) {
     map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
 
     // Show associated content for the collection item
-    const itemId = item.getAttribute('data-item-id');
     const contentId = item.getAttribute('data-content-id');
     const content = document.querySelector(`.tur-collection-content[data-content-id="${contentId}"]`);
     toggleCollectionContent(content);
@@ -102,8 +102,8 @@ document.querySelectorAll('.showmapbutton').forEach(button => {
 });
 
 function toggleCollectionContent(item) {
-    const itemId = item.getAttribute('data-item-id');
-    const content = document.querySelector(`.tur-collection-content[data-content-id="${item}"]`);
+    const contentId = item.getAttribute('data-content-id');
+    const content = document.querySelector(`.tur-collection-content[data-content-id="${contentId}"]`);
     if (content) {
         if (!content.classList.contains('expanded')) {
             openCollectionContent(content);
@@ -129,12 +129,13 @@ function closeCollectionContent(content) {
     }, 10);
 }
 
-// Update marker icons based on item selection
-function updateMarkerIcon(itemId, iconUrl) {
-    const markerData = allMarkers.find(m => m.item === item);
+// Adjust updateMarkerIcon to match the logic used in setupMarkers for associating markers with items
+function updateMarkerIcon(item, iconUrl) {
+    const itemId = item.getAttribute('data-item-id'); // Obtain itemId from the item.
+    const markerData = allMarkers.find(m => m.itemId === itemId); // Use itemId to find the associated marker.
     if (markerData) {
         markerData.marker.getElement().style.backgroundImage = `url(${iconUrl})`;
     } else {
-        console.error("Marker element not found for the item", item);
+        console.error("Marker element not found for item with ID", itemId);
     }
 }
