@@ -48,6 +48,7 @@ export function setupMarkers() {
     document.querySelectorAll('.tur-collection-item').forEach(item => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
+        const itemId = item.getAttribute('data-item-id');
         const category = item.getAttribute('data-kategori');
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
