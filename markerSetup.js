@@ -43,22 +43,22 @@ export function setupMarkers() {
     document.querySelectorAll('.tur-collection-item').forEach(item => {
         const latitude = parseFloat(item.getAttribute('data-lat'));
         const longitude = parseFloat(item.getAttribute('data-lng'));
-        const item = item.getAttribute('data-item-id');
+        const itemId = item.getAttribute('data-item-id');
         const category = item.getAttribute('data-kategori');
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
             const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
             const marker = new mapboxgl.Marker({ element: markerElement, anchor: 'bottom' }).setLngLat([longitude, latitude]).addTo(map);
 
-            allMarkers.push({ marker, item, category });
+            allMarkers.push({ marker, itemId, category });
 
             // Handle click event for collection items and markers, ensuring proper interaction
-            item.addEventListener('click', () => handleClickEvent(item, latitude, longitude));
+            item.addEventListener('click', () => handleClickEvent(itemId, latitude, longitude));
             marker.getElement().addEventListener('click', () => item.click());
         }
     });
 }
-function handleClickEvent(item, latitude, longitude) {
+function handleClickEvent(itemId, latitude, longitude) {
     // Update marker icons
     updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
     currentlySelectedItem = item;
@@ -68,7 +68,7 @@ function handleClickEvent(item, latitude, longitude) {
     map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
 
     // Show associated content for the collection item
-    const item = item.getAttribute('data-item-id');
+    const itemId = item.getAttribute('data-item-id');
     const contentId = item.getAttribute('data-content-id');
     const content = document.querySelector(`.tur-collection-content[data-content-id="${contentId}"]`);
     toggleCollectionContent(content);
@@ -102,7 +102,7 @@ document.querySelectorAll('.showmapbutton').forEach(button => {
 });
 
 function toggleCollectionContent(item) {
-    const item = item.getAttribute('data-item-id');
+    const itemId = item.getAttribute('data-item-id');
     const content = document.querySelector(`.tur-collection-content[data-content-id="${item}"]`);
     if (content) {
         if (!content.classList.contains('expanded')) {
@@ -130,7 +130,7 @@ function closeCollectionContent(content) {
 }
 
 // Update marker icons based on item selection
-function updateMarkerIcon(item, iconUrl) {
+function updateMarkerIcon(itemId, iconUrl) {
     const markerData = allMarkers.find(m => m.item === item);
     if (markerData) {
         markerData.marker.getElement().style.backgroundImage = `url(${iconUrl})`;
