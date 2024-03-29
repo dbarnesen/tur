@@ -3,6 +3,8 @@ import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.j
 import { selectedMarkerIcon, unselectedMarkerIcon, mapboxAccessToken, defaultCenter, defaultZoom } from './config.js';
 
 // Global variables to track state
+let currentlyOpenContent = null;
+let currentlySelectedItem = null;
 let map = null;
 let allMarkers = [];
 
