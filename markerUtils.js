@@ -24,10 +24,10 @@ export function scrollToSelectedItem(item) {
 export function applySelectionStyling(item, selectedCollectionItem) {
     if (selectedCollectionItem) {
         selectedCollectionItem.style.scale = '';
-        selectedCollectionItem.style.box-shadow = '';
+        selectedCollectionItem.style.boxShadow = '';
     }
     item.style.scale = '1.1';
-    item.style.box-shadow = '1px 1px 5px gray';
+    item.style.boxShadow = '1px 1px 5px gray';
     return item; // Return the newly selected item for external tracking
 }
 export function applyPressedStyle(item) {
