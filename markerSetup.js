@@ -1,6 +1,6 @@
 import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
-import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
+import { mapStyles, selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 import { filterCollectionItems, filterMarkersAndAdjustMapView } from './markerFilter.js';
 
 let currentlyOpenContent = null;
