@@ -1,6 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
 import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
+import { filterCollectionItems, filterMarkersAndAdjustMapView } from './markerFilter.js';
 
 let currentlyOpenContent = null;
 let currentlySelectedItem = null;
@@ -86,30 +87,5 @@ function updateMarkerIcon(item, iconUrl) {
     const markerData = allMarkers.find(m => m.item === item);
     if (markerData) {
         markerData.element.style.backgroundImage = `url(${iconUrl})`;
-    }
-}
-
-function filterCollectionItems(filterValue) {
-    document.querySelectorAll('.tur-collection-item').forEach(item => {
-        const itemCategory = item.getAttribute('data-kategori');
-        item.style.display = (filterValue === 'all' || itemCategory === filterValue) ? '' : 'none';
-    });
-}
-
-function filterMarkersAndAdjustMapView(filterValue) {
-    const bounds = new mapboxgl.LngLatBounds();
-    allMarkers.forEach(({ marker, category, latitude, longitude }) => {
-        const isVisible = filterValue === 'all' || category === filterValue;
-        marker.getElement().style.visibility = isVisible ? 'visible' : 'hidden';
-        if (isVisible) {
-            marker.addTo(map);
-            bounds.extend(marker.getLngLat());
-        } else {
-            marker.remove();
-        }
-    });
-
-    if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 50, maxZoom: 15, duration: 6000 });
     }
 }
