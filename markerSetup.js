@@ -15,6 +15,7 @@ export function setupMap() {
 
             // Initialize the map if it's not already created
             if (!map) {
+                console.log("Initializing map with style:", mapStyle);
                 mapboxgl.accessToken = mapboxAccessToken;
                 map = new mapboxgl.Map({
                     container: 'turmap',
@@ -28,6 +29,7 @@ export function setupMap() {
                     applyFilters(filterValue);
                 });
             } else if (map.getStyle().styleURL !== mapStyle) {
+                console.log("Changing map style from", map.getStyle().styleURL, "to", mapStyle);
                 // If map exists but style needs to change
                 map.setStyle(mapStyle).on('style.load', () => {
                     setupMarkers(); // Re-setup markers for the new style
@@ -42,6 +44,8 @@ export function setupMap() {
 }
 
 export function setupMarkers() {
+    console.log(`Adding marker at [${longitude}, ${latitude}] with category ${category}`);
+
     allMarkers.forEach(marker => marker.remove()); // Remove existing markers
     allMarkers = []; // Clear the markers array
 
@@ -84,13 +88,14 @@ function applyFilters(filterValue) {
     document.querySelectorAll('.tur-collection-item').forEach(item => {
         const itemCategory = item.getAttribute('data-kategori');
         item.style.display = (filterValue === 'all' || itemCategory === filterValue) ? '' : 'none';
+        console.log(`Filtering collection items with category: ${filterValue}`);
+
     });
 }
 
 function filterMarkersAndAdjustMapView(filterValue) {
     const bounds = new mapboxgl.LngLatBounds();
     allMarkers.forEach(({ marker, category, latitude, longitude }) => {
-        const isVisible = filterValue === 'all' || category === filterValue;
         marker.getElement().style.visibility = isVisible ? 'visible' : 'hidden';
         if (isVisible) {
             marker.addTo(map);
@@ -98,6 +103,7 @@ function filterMarkersAndAdjustMapView(filterValue) {
         } else {
             marker.remove();
         }
+        console.log(`Setting marker visibility to ${isVisible ? 'visible' : 'hidden'} for category ${category}`);
     });
 }
 function toggleCollectionContent(content) {
