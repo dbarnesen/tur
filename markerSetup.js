@@ -1,11 +1,44 @@
 import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
-import { selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
+import { selectedMarkerIcon, unselectedMarkerIcon, mapboxAccessToken, defaultCenter, defaultZoom } from './config.js';
 
 let currentlyOpenContent = null;
 let currentlySelectedItem = null;
 let allMarkers = [];
-let map;
+let map = null; // Initially null to defer map initialization
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.showmapbutton').forEach(button => {
+        button.addEventListener('click', function() {
+            const filterValue = this.getAttribute('data-kategori');
+            const mapStyle = this.getAttribute('data-mapstyle') || 'mapbox://styles/mapbox/streets-v11'; // Default style
+
+            if (!map) {
+                // Initialize map if it hasn't been already
+                mapboxgl.accessToken = mapboxAccessToken;
+                map = new mapboxgl.Map({
+                    container: 'turmap',
+                    style: mapStyle,
+                    center: defaultCenter, // Default center from your config.js
+                    zoom: defaultZoom // Default zoom from your config.js
+                });
+
+                map.on('load', () => {
+                    setupMarkers(map); // Setup markers after map is loaded
+                    filterMarkersAndAdjustMapView(filterValue); // Apply the initial filter
+                });
+            } else if (map.getStyle().styleURL !== mapStyle) {
+                // Handle map style change
+                map.setStyle(mapStyle).on('style.load', () => {
+                    reinitializeMarkers(); // Reinitialize markers for the new style
+                    filterMarkersAndAdjustMapView(filterValue); // Reapply filter
+                });
+            } else {
+                filterMarkersAndAdjustMapView(filterValue); // Just reapply filter if style hasn't changed
+            }
+        });
+    });
+});
 
 export function setupMarkers(initialMap) {
     map = initialMap;
