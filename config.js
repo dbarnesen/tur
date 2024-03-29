@@ -4,3 +4,8 @@ export const selectedMarkerIcon = 'https://uploads-ssl.webflow.com/5a12777c9048e
 export const mapStyle = 'mapbox://styles/dbarnesen/ckk3vfvbi4t1v17p82fuy61pt';
 export const defaultCenter = [8.2961, 59.91639];
 export const defaultZoom = 5.5;
+export const mapStyles = {
+  default: 'mapbox://styles/dbarnesen/ckk3vfvbi4t1v17p82fuy61pt',
+  picture: 'mapbox://styles/dbarnesen/clu1rd21q002x01pi0udm9dds',
+  streets: 'mapbox://styles/dbarnesen/cltqf5kh9001w01qu48sn3oti',
+  };
