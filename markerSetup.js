@@ -41,7 +41,7 @@ function setupMarkers() {
 
             // Click event for each collection item
             item.addEventListener('click', () => {
-                map.flyTo({ center: [longitude, latitude], zoom: 16 });
+                map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
                 scrollToSelectedItem(item);
                 toggleCollectionItem(item);
             });
@@ -89,15 +89,17 @@ document.querySelectorAll('.showmapbutton').forEach(button => {
 function applyFilters(category) {
     // Filter collection items
     document.querySelectorAll('.tur-collection-item').forEach(item => {
-        item.style.display = item.getAttribute('data-kategori') === category ? 'block' : 'none';
+        item.style.display = item.getAttribute('data-kategori') === category || category === 'all' ? 'block' : 'none';
     });
 
     // Filter markers
     allMarkers.forEach(({ marker, item }) => {
-        if (item.getAttribute('data-kategori') === category) {
-            marker.getElement().style.display = 'block';
+        if (item.getAttribute('data-kategori') === category || category === 'all') {
+            if (!marker.getMap()) {
+                marker.addTo(map); // Add marker to map if it's not already added
+            }
         } else {
-            marker.getElement().style.display = 'none';
+            marker.remove(); // Remove marker from map
         }
     });
 
