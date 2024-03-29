@@ -43,14 +43,6 @@ export function setupMarkers(initialMap) {
             });
         }
     });
-
-    document.querySelectorAll('.showmapbutton').forEach(button => {
-        button.addEventListener('click', function() {
-            const filterValue = this.getAttribute('data-kategori');
-            filterCollectionItems(filterValue);
-            filterMarkersAndAdjustMapView(filterValue);
-        });
-    });
 }
 
 function toggleCollectionContent(content) {
@@ -70,7 +62,7 @@ function openCollectionContent(content) {
     content.style.display = 'block';
     setTimeout(() => {
         content.classList.add('expanded');
-        content.style.height = '30vh';
+        content.style.height = '32vh';
     }, 10);
 }
 
