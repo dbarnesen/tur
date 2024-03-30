@@ -1,7 +1,7 @@
-//ver 2306290324
+// ver 2306290324
 import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
-import { mapStyles, selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
+import { mapStyles } from './config.js';
 import { filterCollectionItems, filterMarkersAndAdjustMapView } from './markerFilter.js';
 import { changeMapStyle } from './mapSetup.js';
 
@@ -17,50 +17,54 @@ export function setupMarkers(initialMap) {
         const longitude = parseFloat(item.getAttribute('data-lng'));
         const itemId = item.getAttribute('data-item-id');
         const category = item.getAttribute('data-kategori');
-        const markerElement = createCustomMarkerElement(); // Assuming this creates the <span>
-        markerElement.setAttribute('data-item-id', itemId); // Link the marker with the item ID
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
-            const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
+            const markerElement = createCustomMarkerElement(); // Assumes iconName is 'location_on' by default
+            markerElement.setAttribute('data-item-id', itemId); // Link marker to collection item
+            markerElement.className += ' unSelected'; // Initial class for unselected state
             const marker = new mapboxgl.Marker({
                 element: markerElement,
                 anchor: 'bottom',
             }).setLngLat([longitude, latitude]).addTo(map);
 
             allMarkers.push({ marker, item, category, element: markerElement, latitude, longitude });
-            const item = document.querySelector(`.tur-collection-item[data-item-id="${itemId}"]`);
-            item.click(); // Simulate a click on the associated collection item
-            item.addEventListener('click', function() {
-                if (currentlySelectedItem) {
-                currentlySelectedItem.classList.remove('selected'); // Remove 'selected' from the previously selected item
-                // Also, remove 'selected' from the previously selected marker if needed
-                const prevMarkerElement = allMarkers.find(m => m.item === currentlySelectedItem).element;
-                prevMarkerElement.classList.remove('selectedMarker');
-                }
-                this.classList.add('selected');
-                currentlySelectedItem = this;
 
-                const markerElement = allMarkers.find(m => m.item === this).element;
-                markerElement.classList.add('selectedMarker');
+            // Handle click on collection item
+            item.addEventListener('click', function() {
+                // Remove selection from previously selected item and marker
+                if (currentlySelectedItem) {
+                    currentlySelectedItem.classList.remove('selected');
+                    const prevMarkerElement = allMarkers.find(m => m.item === currentlySelectedItem).element;
+                    prevMarkerElement.classList.remove('selectedMarker');
+                }
+
+                // Add selection to the current item and marker
+                this.classList.add('selected');
+                const currentMarkerElement = allMarkers.find(m => m.item === this).element;
+                currentMarkerElement.classList.add('selectedMarker');
+                currentlySelectedItem = this;
 
                 map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
                 scrollToSelectedItem(this);
                 toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
             });
+
+            // Handle direct click on marker
+            markerElement.addEventListener('click', () => {
+                document.querySelector(`.tur-collection-item[data-item-id="${itemId}"]`).click();
+            });
         }
     });
 
     document.querySelectorAll('.showmapbutton').forEach(button => {
-    button.addEventListener('click', function() {
-        const filterValue = this.getAttribute('data-kategori');
-        // Correctly use filterValue to get the style URL
-        const styleUrl = mapStyles[filterValue] || mapStyles.default; // Use filterValue here
-        changeMapStyle(styleUrl); // Assuming changeMapStyle function is correctly defined/imported to change the map's style
-        filterCollectionItems(filterValue);
-        filterMarkersAndAdjustMapView(map, allMarkers, filterValue);
+        button.addEventListener('click', function() {
+            const filterValue = this.getAttribute('data-kategori');
+            const styleUrl = mapStyles[filterValue] || mapStyles.default; // Use filterValue here
+            changeMapStyle(styleUrl); // Assuming changeMapStyle function is correctly defined/imported to change the map's style
+            filterCollectionItems(filterValue);
+            filterMarkersAndAdjustMapView(map, allMarkers, filterValue);
+        });
     });
-});
-
 }
 
 function toggleCollectionContent(content) {
