@@ -29,20 +29,20 @@ export function setupMarkers(initialMap) {
 
             item.addEventListener('click', function() {
                 if (currentlySelectedItem) {
-                    currentlySelectedItem.classList.remove('selected');
-                    updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
+                currentlySelectedItem.classList.remove('selected'); // Remove 'selected' from the previously selected item
+                // Also, remove 'selected' from the previously selected marker if needed
+                const prevMarkerElement = allMarkers.find(m => m.item === currentlySelectedItem).element;
+                prevMarkerElement.classList.remove('selected');
                 }
                 this.classList.add('selected');
                 currentlySelectedItem = this;
-                updateMarkerIcon(this, selectedMarkerIcon);
+
+                const markerElement = allMarkers.find(m => m.item === this).element;
+                markerElement.classList.add('selected');
+
                 map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
                 scrollToSelectedItem(this);
-
                 toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
-            });
-
-            marker.getElement().addEventListener('click', () => {
-                item.click(); // Simulate click on the collection item
             });
         }
     });
@@ -87,11 +87,4 @@ function closeCollectionContent(content) {
         content.style.height = '0';
         setTimeout(() => content.style.display = 'none', 300);
     }, 10);
-}
-
-function updateMarkerIcon(item, iconUrl) {
-    const markerData = allMarkers.find(m => m.item === item);
-    if (markerData) {
-        markerData.element.style.backgroundImage = `url(${iconUrl})`;
-    }
 }
