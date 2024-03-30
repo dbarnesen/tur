@@ -5,7 +5,7 @@ export function createCustomMarkerElement(iconName = 'location_on') {
     markerElement.className = 'material-symbols-outlined custom-marker';
     markerElement.innerHTML = iconName; // Set the icon's text. Default is 'location_on'.
     // Optional: Style your marker further if needed
-    markerElement.style.fontSize = '24px'; // Example size
+    markerElement.style.fontSize = '40px'; // Example size
     // markerElement.style.color = '#cce8e7'; // Example color
     markerElement.style.stroke = '1px #051f1f';
     return markerElement;
@@ -13,10 +13,20 @@ export function createCustomMarkerElement(iconName = 'location_on') {
 
 export function toggleMarkerIcon(markers, selectedIndex) {
     markers.forEach((marker, index) => {
-        const iconUrl = index === selectedIndex ? selectedMarkerIcon : unselectedMarkerIcon;
-        marker.getElement().style.backgroundImage = `url(${iconUrl})`;
+        // Get the marker element, assuming marker.getElement() correctly retrieves the span element
+        const markerElement = marker.getElement();
+
+        // Check if the current marker is the selected one
+        if (index === selectedIndex) {
+            // Add 'selected' class to highlight the marker
+            markerElement.classList.add('selected');
+        } else {
+            // Remove 'selected' class from all other markers
+            markerElement.classList.remove('selected');
+        }
     });
 }
+
 
 export function scrollToSelectedItem(item) {
     item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center'});
