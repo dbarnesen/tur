@@ -17,6 +17,8 @@ export function setupMarkers(initialMap) {
         const longitude = parseFloat(item.getAttribute('data-lng'));
         const itemId = item.getAttribute('data-item-id');
         const category = item.getAttribute('data-kategori');
+        const markerElement = createCustomMarkerElement(); // Assuming this creates the <span>
+        markerElement.setAttribute('data-item-id', itemId); // Link the marker with the item ID
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
             const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
@@ -26,7 +28,8 @@ export function setupMarkers(initialMap) {
             }).setLngLat([longitude, latitude]).addTo(map);
 
             allMarkers.push({ marker, item, category, element: markerElement, latitude, longitude });
-
+            const item = document.querySelector(`.tur-collection-item[data-item-id="${itemId}"]`);
+            item.click(); // Simulate a click on the associated collection item
             item.addEventListener('click', function() {
                 if (currentlySelectedItem) {
                 currentlySelectedItem.classList.remove('selected'); // Remove 'selected' from the previously selected item
