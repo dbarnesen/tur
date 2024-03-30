@@ -32,14 +32,14 @@ export function scrollToSelectedItem(item) {
 }
 
 export function applySelectionStyling(item, selectedCollectionItem) {
-    if (selectedCollectionItem) {
-        selectedCollectionItem.style.scale = '';
-        selectedCollectionItem.style.boxShadow = '';
+    // Check if the item is a collection item based on a class, tagName, or other identifier
+    if (item.classList.contains('tur-collection-item')) { // Assuming 'tur-collection-item' is a class for collection items
+        if (selectedCollectionItem) {
+            selectedCollectionItem.style.scale = '';
+            selectedCollectionItem.style.boxShadow = '';
+        }
+        item.style.scale = '1.1';
+        item.style.boxShadow = '1px 1px 5px gray';
     }
-    item.style.scale = '1.1';
-    item.style.boxShadow = '1px 1px 5px gray';
     return item; // Return the newly selected item for external tracking
-}
-export function applyPressedStyle(item) {
-    item.classList.add('selected'); // Add a class that mimics the Webflow style for pressed/focused state
 }
