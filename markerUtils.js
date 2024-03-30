@@ -2,7 +2,7 @@ import { unselectedMarkerIcon, selectedMarkerIcon } from './config.js';
 
 export function createCustomMarkerElement(iconName = 'location_on') {
     const markerElement = document.createElement('span');
-    markerElement.className = 'material-symbols-outlined unSelected';
+    markerElement.className = 'material-symbols-outlined.unSelected';
     markerElement.innerHTML = iconName; // Set the icon's text. Default is 'location_on'.
     // Optional: Style your marker further if needed
     markerElement.style.fontSize = '40px'; // Example size
@@ -32,14 +32,11 @@ export function scrollToSelectedItem(item) {
 }
 
 export function applySelectionStyling(item, selectedCollectionItem) {
-    // Check if the item is a collection item based on a class, tagName, or other identifier
-    if (item.classList.contains('tur-collection-item')) { // Assuming 'tur-collection-item' is a class for collection items
-        if (selectedCollectionItem) {
-            selectedCollectionItem.style.scale = '';
-            selectedCollectionItem.style.boxShadow = '';
-        }
-        item.style.scale = '1.1';
-        item.style.boxShadow = '1px 1px 5px gray';
+    if (selectedCollectionItem) {
+        selectedCollectionItem.style.scale = '';
+        selectedCollectionItem.style.boxShadow = '';
     }
+    item.style.scale = '1.1';
+    item.style.boxShadow = '1px 1px 5px gray';
     return item; // Return the newly selected item for external tracking
 }
