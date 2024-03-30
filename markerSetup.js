@@ -32,13 +32,13 @@ export function setupMarkers(initialMap) {
                 currentlySelectedItem.classList.remove('selected'); // Remove 'selected' from the previously selected item
                 // Also, remove 'selected' from the previously selected marker if needed
                 const prevMarkerElement = allMarkers.find(m => m.item === currentlySelectedItem).element;
-                prevMarkerElement.classList.remove('selected');
+                prevMarkerElement.classList.remove('selectedMarker');
                 }
                 this.classList.add('selected');
                 currentlySelectedItem = this;
 
                 const markerElement = allMarkers.find(m => m.item === this).element;
-                markerElement.classList.add('selected');
+                markerElement.classList.add('selectedMarker');
 
                 map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
                 scrollToSelectedItem(this);
