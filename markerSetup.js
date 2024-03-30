@@ -29,17 +29,21 @@ export function setupMarkers(initialMap) {
 
             item.addEventListener('click', function() {
                 if (currentlySelectedItem) {
-                    currentlySelectedItem.classList.remove('selectedMarker');
-                    updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
-                }
-                this.classList.add('selectedMarker');
-                currentlySelectedItem = this;
-                updateMarkerIcon(this, selectedMarkerIcon);
-                map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
-                scrollToSelectedItem(this);
+                currentlySelectedItem.classList.remove('selected'); // Remove 'selected' from the previously selected item
+                // Also, remove 'selectedMarker' from the previously selected marker if needed
+                const prevMarkerElement = allMarkers.find(m => m.item === currentlySelectedItem).element;
+                prevMarkerElement.classList.remove('selectedMarker');
+            }
+    this.classList.add('selected');
+    currentlySelectedItem = this;
 
-                toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
-            });
+    const markerElement = allMarkers.find(m => m.item === this).element;
+    markerElement.classList.add('selectedMarker');
+
+    map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
+    scrollToSelectedItem(this);
+    toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
+});
 
             marker.getElement().addEventListener('click', () => {
                 item.click(); // Simulate click on the collection item
