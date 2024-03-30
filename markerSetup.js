@@ -1,7 +1,7 @@
-// ver 2306290324
+/ver 2306290324
 import mapboxgl from 'mapbox-gl';
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
-import { mapStyles } from './config.js';
+import { mapStyles, selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 import { filterCollectionItems, filterMarkersAndAdjustMapView } from './markerFilter.js';
 import { changeMapStyle } from './mapSetup.js';
 
@@ -19,9 +19,7 @@ export function setupMarkers(initialMap) {
         const category = item.getAttribute('data-kategori');
 
         if (!isNaN(latitude) && !isNaN(longitude)) {
-            const markerElement = createCustomMarkerElement(); // Assumes iconName is 'location_on' by default
-            markerElement.setAttribute('data-item-id', itemId); // Link marker to collection item
-            markerElement.className += ' unSelected'; // Initial class for unselected state
+            const markerElement = createCustomMarkerElement(unselectedMarkerIcon);
             const marker = new mapboxgl.Marker({
                 element: markerElement,
                 anchor: 'bottom',
@@ -29,42 +27,37 @@ export function setupMarkers(initialMap) {
 
             allMarkers.push({ marker, item, category, element: markerElement, latitude, longitude });
 
-            // Handle click on collection item
             item.addEventListener('click', function() {
-                // Remove selection from previously selected item and marker
                 if (currentlySelectedItem) {
-                    currentlySelectedItem.classList.remove('selected');
-                    const prevMarkerElement = allMarkers.find(m => m.item === currentlySelectedItem).element;
-                    prevMarkerElement.classList.remove('selectedMarker');
+                    currentlySelectedItem.classList.remove('selectedMarker');
+                    updateMarkerIcon(currentlySelectedItem, unselectedMarkerIcon);
                 }
-
-                // Add selection to the current item and marker
-                this.classList.add('selected');
-                const currentMarkerElement = allMarkers.find(m => m.item === this).element;
-                currentMarkerElement.classList.add('selectedMarker');
+                this.classList.add('selectedMarker');
                 currentlySelectedItem = this;
-
+                updateMarkerIcon(this, selectedMarkerIcon);
                 map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
                 scrollToSelectedItem(this);
+
                 toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
             });
 
-            // Handle direct click on marker
-            markerElement.addEventListener('click', () => {
-                document.querySelector(`.tur-collection-item[data-item-id="${itemId}"]`).click();
+            marker.getElement().addEventListener('click', () => {
+                item.click(); // Simulate click on the collection item
             });
         }
     });
 
     document.querySelectorAll('.showmapbutton').forEach(button => {
-        button.addEventListener('click', function() {
-            const filterValue = this.getAttribute('data-kategori');
-            const styleUrl = mapStyles[filterValue] || mapStyles.default; // Use filterValue here
-            changeMapStyle(styleUrl); // Assuming changeMapStyle function is correctly defined/imported to change the map's style
-            filterCollectionItems(filterValue);
-            filterMarkersAndAdjustMapView(map, allMarkers, filterValue);
-        });
+    button.addEventListener('click', function() {
+        const filterValue = this.getAttribute('data-kategori');
+        // Correctly use filterValue to get the style URL
+        const styleUrl = mapStyles[filterValue] || mapStyles.default; // Use filterValue here
+        changeMapStyle(styleUrl); // Assuming changeMapStyle function is correctly defined/imported to change the map's style
+        filterCollectionItems(filterValue);
+        filterMarkersAndAdjustMapView(map, allMarkers, filterValue);
     });
+});
+
 }
 
 function toggleCollectionContent(content) {
