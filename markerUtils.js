@@ -18,10 +18,10 @@ export function toggleMarkerIcon(markers, selectedIndex) {
         // Check if the current marker is the selected one
         if (index === selectedIndex) {
             // Add 'selected' class to highlight the marker
-            markerElement.classList.add('selected');
+            markerElement.classList.add('selectedMarker');
         } else {
             // Remove 'selected' class from all other markers
-            markerElement.classList.remove('selected');
+            markerElement.classList.remove('selectedMarker');
         }
     });
 }
