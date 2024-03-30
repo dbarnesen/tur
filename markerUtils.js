@@ -6,7 +6,7 @@ export function createCustomMarkerElement(iconName = 'location_on') {
     markerElement.innerHTML = iconName; // Set the icon's text. Default is 'location_on'.
     // Optional: Style your marker further if needed
     markerElement.style.fontSize = '24px'; // Example size
-    markerElement.style.color = '#cce8e7'; // Example color
+    // markerElement.style.color = '#cce8e7'; // Example color
     markerElement.style.stroke = '1px #051f1f';
     return markerElement;
 }
