@@ -1,59 +1,64 @@
 export function setupSwipeInteractions() {
-    let startY;
-    let initialHeight;
-    let isDragging = false;
-    const minInitialHeight = 20; // Minimum height in vh before drag
-    const partialExpandHeight = 30; // Partially expanded height in vh
-    const contentMaxHeight = 70; // Max height in vh for expanded content
-    const expandThreshold = 50; // Threshold in vh to decide on expansion or retraction
+    let startY, isDragging = false, isMoved = false;
+    const initialHeight = 30; // Height after a tap
+    const contentMaxHeight = 70; // Maximum expandable height
+    // Thresholds remain the same
 
     const handleTouchStart = (event) => {
-        const content = event.target.closest('.tur-collection-content');
-        if (content) {
-            startY = event.touches[0].clientY;
-            initialHeight = parseInt(window.getComputedStyle(content).height, 10);
-            isDragging = true;
-            content.style.transition = 'none'; // Temporarily disable transitions for smooth drag
-        }
+        startY = event.touches[0].clientY;
+        isMoved = false; // Reset movement flag
     };
 
     const handleTouchMove = (event) => {
-        if (!isDragging || !startY) return;
+        if (!startY) return;
         const moveY = event.touches[0].clientY;
         const deltaY = moveY - startY;
 
-        const content = event.target.closest('.tur-collection-content');
-        if (content) {
-            let newHeight = initialHeight + deltaY * (100 / window.innerHeight); // Calculate new height based on drag
-            newHeight = Math.max(newHeight, minInitialHeight); // Ensure new height is not less than minimum
-            newHeight = Math.min(newHeight, contentMaxHeight); // Ensure new height does not exceed maximum
-            content.style.height = `${newHeight}vh`;
-            content.style.opacity = newHeight / contentMaxHeight;
+        // Qualify as drag if significant vertical movement
+        if (Math.abs(deltaY) > 10) { // Adjust sensitivity as needed
+            isDragging = true;
+            isMoved = true;
+
+            const content = event.target.closest('.tur-collection-content');
+            if (content) {
+                let newHeight = initialHeight + deltaY * (100 / window.innerHeight);
+                newHeight = Math.max(0, Math.min(newHeight, contentMaxHeight)); // Constrain newHeight
+                content.style.maxHeight = `${newHeight}vh`;
+                // Opacity can be adjusted here if needed
+            }
         }
     };
 
     const handleTouchEnd = (event) => {
-        if (!isDragging) return;
-        isDragging = false;
         const content = event.target.closest('.tur-collection-content');
-        if (content) {
-            content.style.transition = ''; // Re-enable transitions
-            let finalHeight = parseFloat(content.style.height);
-            if (finalHeight >= expandThreshold) {
-                // Expand fully if dragged beyond threshold
-                content.classList.add('expanded');
-                content.style.height = `${contentMaxHeight}vh`;
-            } else {
-                // Retract to partially expanded state if not dragged enough
-                content.classList.remove('expanded');
-                content.style.height = `${partialExpandHeight}vh`;
-            }
-            content.style.opacity = 1; // Ensure full opacity after expansion/retraction
+        if (content && !isMoved) {
+            // Handle tap without move
+            content.style.maxHeight = `${initialHeight}vh`;
+            content.style.transition = 'max-height 0.3s ease, opacity 0.3s ease';
+            // Add further logic if you want to toggle or set specific states based on current height
+        } else if (isDragging) {
+            // End of drag, decide to expand or collapse
+            finalizeHeight(content);
         }
-        startY = null; // Reset start Y position for the next interaction
+        // Reset flags
+        startY = null;
+        isDragging = false;
+        isMoved = false;
     };
 
-    // Apply touch event listeners to all elements with .tur-content-slide-cnt class
+    const finalizeHeight = (content) => {
+        let finalHeight = parseFloat(content.style.maxHeight);
+        content.style.transition = 'max-height 0.3s ease, opacity 0.3s ease'; // Re-enable smooth transition
+        if (finalHeight >= contentMaxHeight / 2) {
+            // Expand if dragged more than halfway
+            content.style.maxHeight = `${contentMaxHeight}vh`;
+        } else {
+            // Collapse otherwise
+            content.style.maxHeight = `${initialHeight}vh`;
+        }
+    };
+
+    // Apply event listeners
     document.querySelectorAll('.tur-content-slide-cnt').forEach((element) => {
         element.addEventListener('touchstart', handleTouchStart, { passive: true });
         element.addEventListener('touchmove', handleTouchMove, { passive: true });
