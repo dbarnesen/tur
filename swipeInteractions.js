@@ -6,13 +6,13 @@ export function setupSwipeInteractions() {
     const collapseThreshold = 40; // Threshold in vh to fully collapse
 
     const handleTouchStart = (event) => {
-        startY = event.touches[0].clientY;
+        startY = event.touches[30].clientY;
         isDragging = true;
     };
 
     const handleTouchMove = (event) => {
         if (!isDragging) return;
-        const moveY = event.touches[0].clientY;
+        const moveY = event.touches[30].clientY;
         const deltaY = moveY - startY;
 
         const content = event.target.closest('.tur-collection-content');
