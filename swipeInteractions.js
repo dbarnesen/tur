@@ -1,59 +1,56 @@
 export function setupSwipeInteractions() {
     let startY;
+    let initialHeight;
     let isDragging = false;
+    const minInitialHeight = 20; // Minimum height in vh before drag
+    const partialExpandHeight = 30; // Partially expanded height in vh
     const contentMaxHeight = 70; // Max height in vh for expanded content
-    const expandThreshold = 60; // Threshold in vh to fully expand
-    const collapseThreshold = 40; // Threshold in vh to fully collapse
+    const expandThreshold = 50; // Threshold in vh to decide on expansion or retraction
 
     const handleTouchStart = (event) => {
-        startY = event.touches[30].clientY;
-        isDragging = true;
+        const content = event.target.closest('.tur-collection-content');
+        if (content) {
+            startY = event.touches[0].clientY;
+            initialHeight = parseInt(window.getComputedStyle(content).height, 10);
+            isDragging = true;
+            content.style.transition = 'none'; // Temporarily disable transitions for smooth drag
+        }
     };
 
     const handleTouchMove = (event) => {
-        if (!isDragging) return;
-        const moveY = event.touches[30].clientY;
+        if (!isDragging || !startY) return;
+        const moveY = event.touches[0].clientY;
         const deltaY = moveY - startY;
 
         const content = event.target.closest('.tur-collection-content');
         if (content) {
-            let newHeight = Math.max(0, deltaY / window.innerHeight * 100); // Calculate new height as a percentage of screen height
-            newHeight = Math.min(newHeight, contentMaxHeight); // Limit new height to maximum
-            content.style.maxHeight = `${newHeight}vh`;
-            content.style.visibility = 'visible';
+            let newHeight = initialHeight + deltaY * (100 / window.innerHeight); // Calculate new height based on drag
+            newHeight = Math.max(newHeight, minInitialHeight); // Ensure new height is not less than minimum
+            newHeight = Math.min(newHeight, contentMaxHeight); // Ensure new height does not exceed maximum
+            content.style.height = `${newHeight}vh`;
             content.style.opacity = newHeight / contentMaxHeight;
         }
     };
 
     const handleTouchEnd = (event) => {
+        if (!isDragging) return;
         isDragging = false;
         const content = event.target.closest('.tur-collection-content');
         if (content) {
-            let finalHeight = parseFloat(content.style.maxHeight);
+            content.style.transition = ''; // Re-enable transitions
+            let finalHeight = parseFloat(content.style.height);
             if (finalHeight >= expandThreshold) {
+                // Expand fully if dragged beyond threshold
                 content.classList.add('expanded');
-                content.style.maxHeight = `${contentMaxHeight}vh`;
-                content.style.opacity = 1;
-            } else if (finalHeight < expandThreshold && finalHeight > collapseThreshold) {
-                // If released between the thresholds, decide based on direction of swipe
-                const endY = event.changedTouches[0].clientY;
-                const direction = endY - startY;
-                if (direction > 0) { // Downward swipe
-                    content.classList.remove('expanded');
-                    content.style.maxHeight = '0';
-                    content.style.opacity = 0;
-                } else { // Upward swipe
-                    content.classList.add('expanded');
-                    content.style.maxHeight = `${contentMaxHeight}vh`;
-                    content.style.opacity = 1;
-                }
+                content.style.height = `${contentMaxHeight}vh`;
             } else {
+                // Retract to partially expanded state if not dragged enough
                 content.classList.remove('expanded');
-                content.style.maxHeight = '0';
-                content.style.opacity = 0;
+                content.style.height = `${partialExpandHeight}vh`;
             }
+            content.style.opacity = 1; // Ensure full opacity after expansion/retraction
         }
-        startY = null; // Reset startY for the next interaction
+        startY = null; // Reset start Y position for the next interaction
     };
 
     // Apply touch event listeners to all elements with .tur-content-slide-cnt class
