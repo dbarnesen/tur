@@ -2,63 +2,54 @@ const $$ = (selector, callback) => {
     document.querySelectorAll(selector).forEach(callback);
 };
 
-export function setupSwipeInteractions() {
-    let startY, endY;
-    const minSwipeDistance = 20; // Minimum swipe distance threshold
+export function setupDragInteractions() {
+    let startY;
+    let isDragging = false;
+    const contentMaxHeight = 70; // Max height in vh
+    const expandThreshold = 60; // Threshold to fully expand in vh
+    const collapseThreshold = 40; // Threshold to collapse in vh
 
     const handleTouchStart = event => {
         startY = event.touches[0].clientY;
+        isDragging = true;
+    };
+
+    const handleTouchMove = event => {
+        if (!isDragging) return;
+        const moveY = event.touches[0].clientY;
+        const deltaY = moveY - startY;
+
+        const content = event.target.closest('.tur-collection-content');
+        if (content) {
+            let newHeight = Math.min(Math.max(deltaY / window.innerHeight * 100, 0), contentMaxHeight);
+            content.style.maxHeight = `${newHeight}vh`;
+            content.style.visibility = 'visible';
+            content.style.opacity = newHeight / contentMaxHeight;
+        }
     };
 
     const handleTouchEnd = event => {
-        if (!startY) return; // Prevent handling if touch start event hasn't occurred
-        endY = event.changedTouches[0].clientY;
+        if (!isDragging) return;
+        isDragging = false;
 
-        const deltaY = endY - startY;
-        if (Math.abs(deltaY) > minSwipeDistance) {
-            if (deltaY > 0) {
-                collapseDiv(event.target); // Swiping down
-            } else {
-                expandDiv(event.target); // Swiping up
-            }
-            window.scrollTo(0, 0);
-            startY = null;
-        }
-    };
-
-    const expandDiv = (target) => {
-        const content = target.closest('.tur-collection-content');
+        const content = event.target.closest('.tur-collection-content');
         if (content) {
-            content.style.height = '70vh';
-            content.classList.add('expanded'); // Mark as expanded
-            const trayArrow = content.querySelector('.tur-tray-arrow');
-            if (trayArrow) {
-                trayArrow.style.transform = 'rotateX(0deg)'; // Adjust arrow for expanded state
+            let finalHeight = parseInt(content.style.maxHeight);
+            if (finalHeight >= expandThreshold) {
+                content.classList.add('expanded');
+                content.style.maxHeight = `${contentMaxHeight}vh`;
+            } else if (finalHeight <= collapseThreshold) {
+                content.classList.remove('expanded');
+                content.style.maxHeight = '0';
             }
+            content.style.opacity = content.classList.contains('expanded') ? 1 : 0;
         }
     };
 
-    const collapseDiv = (target) => {
-        const content = target.closest('.tur-collection-content');
-        if (content) {
-            content.classList.remove('expanded'); // Mark as not expanded
-            content.style.height = '20vh'; // Start collapse
-            setTimeout(() => {
-                // Only hide if the content is not expanded after the delay
-                if (!content.classList.contains('expanded')) {
-                    content.style.display = 'none'; // Hide after collapsing
-                }
-            }, 300); // Delay should match CSS transition for smooth effect
-            const trayArrow = content.querySelector('.tur-tray-arrow');
-            if (trayArrow) {
-                trayArrow.style.transform = 'rotateX(180deg)'; // Reset arrow for collapsed state
-            }
-        }
-    };
-
-    // Apply the touch event listeners to all .tur-content-slide-cnt elements
-    $$('.tur-content-slide-cnt', contentSlideCnt => {
-        contentSlideCnt.addEventListener('touchstart', handleTouchStart);
-        contentSlideCnt.addEventListener('touchend', handleTouchEnd);
+    // Apply touch event listeners to the draggable handle
+    document.querySelectorAll('.tur-content-slide-cnt').forEach(handle => {
+        handle.addEventListener('touchstart', handleTouchStart, {passive: true});
+        handle.addEventListener('touchmove', handleTouchMove, {passive: true});
+        handle.addEventListener('touchend', handleTouchEnd);
     });
 }
