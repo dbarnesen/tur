@@ -26,7 +26,7 @@ export function setupSwipeInteractions() {
         }
     };
 
-    onst expandDiv = (target) => {
+const expandDiv = (target) => {
     const content = target.closest('.tur-collection-content');
     if (content) {
         content.classList.add('expanded'); // Mark as expanded
