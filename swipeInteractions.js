@@ -42,7 +42,7 @@ export function setupSwipeInteractions() {
         const content = target.closest('.tur-collection-content');
         if (content) {
             content.classList.remove('expanded'); // Mark as not expanded
-            content.style.height = '21vh'; // Start collapse
+            content.style.height = '20vh'; // Start collapse
             setTimeout(() => {
                 // Only hide if the content is not expanded after the delay
                 if (!content.classList.contains('expanded')) {
