@@ -26,29 +26,35 @@ export function setupSwipeInteractions() {
         }
     };
 
-const expandDiv = (target) => {
-    const content = target.closest('.tur-collection-content');
-    if (content) {
-        content.classList.add('expanded'); // Mark as expanded
-        content.style.maxHeight = '70vh'; // Use max-height for transition
-        const trayArrow = content.querySelector('.tur-tray-arrow');
-        if (trayArrow) {
-            trayArrow.style.transform = 'rotateX(0deg)'; // Adjust arrow for expanded state
+    const expandDiv = (target) => {
+        const content = target.closest('.tur-collection-content');
+        if (content) {
+            content.style.height = '70vh';
+            content.classList.add('expanded'); // Mark as expanded
+            const trayArrow = content.querySelector('.tur-tray-arrow');
+            if (trayArrow) {
+                trayArrow.style.transform = 'rotateX(0deg)'; // Adjust arrow for expanded state
+            }
         }
-    }
-};
+    };
 
-const collapseDiv = (target) => {
-    const content = target.closest('.tur-collection-content');
-    if (content) {
-        content.classList.remove('expanded'); // Mark as not expanded
-        content.style.maxHeight = '0'; // Transition to 0 for collapse
-        const trayArrow = content.querySelector('.tur-tray-arrow');
-        if (trayArrow) {
-            trayArrow.style.transform = 'rotateX(180deg)'; // Reset arrow for collapsed state
+    const collapseDiv = (target) => {
+        const content = target.closest('.tur-collection-content');
+        if (content) {
+            content.classList.remove('expanded'); // Mark as not expanded
+            content.style.height = '20vh'; // Start collapse
+            setTimeout(() => {
+                // Only hide if the content is not expanded after the delay
+                if (!content.classList.contains('expanded')) {
+                    content.style.display = 'none'; // Hide after collapsing
+                }
+            }, 300); // Delay should match CSS transition for smooth effect
+            const trayArrow = content.querySelector('.tur-tray-arrow');
+            if (trayArrow) {
+                trayArrow.style.transform = 'rotateX(180deg)'; // Reset arrow for collapsed state
+            }
         }
-    }
-};
+    };
 
     // Apply the touch event listeners to all .tur-content-slide-cnt elements
     $$('.tur-content-slide-cnt', contentSlideCnt => {
