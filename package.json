@@ -11,6 +11,6 @@
     "rollup-plugin-terser": "^7.0.2"
   },
   "dependencies": {
-  "@mattixbrand/bottomsheet": "*"
+  "@mattixes/bottomsheet": "*"
 }
 }
