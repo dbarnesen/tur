@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BottomSheet } from '@mattixbrand/bottomsheet';
-import '@mattixbrand/bottomsheet/dist/style.css';
+import { BottomSheet } from '@mattixes/bottomsheet';
+import '@mattixes/bottomsheet/dist/style.css';
 
 const BottomSheetWrapper = () => {
   const [isOpen, setIsOpen] = useState(false);
