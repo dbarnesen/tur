@@ -41,7 +41,6 @@ export function setupMarkers(initialMap) {
 
     map.flyTo({ center: [longitude, latitude], zoom: 16, duration: 2000 });
     scrollToSelectedItem(this);
-    toggleCollectionContent(document.querySelector(`.tur-collection-content[data-content-id="${itemId}"]`));
 });
 
             marker.getElement().addEventListener('click', () => {
