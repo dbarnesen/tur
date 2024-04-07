@@ -11,6 +11,6 @@
     "rollup-plugin-terser": "^7.0.2"
   },
   "dependencies": {
-  "@mattixes/bottomsheet": "*"
+  "gsap": "^3.12.5"
 }
 }
