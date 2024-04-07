@@ -2,7 +2,7 @@ import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 
 gsap.registerPlugin(Draggable);
-
+let currentActiveContent = null;
 export function initSwipeInteractions() {
   const bottomSheet = document.querySelector('.tur-collection-content');
 
