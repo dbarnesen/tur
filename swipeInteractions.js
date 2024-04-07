@@ -5,7 +5,7 @@ gsap.registerPlugin(Draggable);
 
 export function initSwipeInteractions() {
   
-  const bottomSheet = document.getElementById('tur-collection-content');
+  const bottomSheet = document.getElementById('.tur-collection-content');
 
   if (bottomSheet) {
     const viewportHeight = window.innerHeight;
