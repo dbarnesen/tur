@@ -36,7 +36,7 @@ document.querySelectorAll('.tur-collection-item').forEach(item => {
     // Show the newly selected content
     if (contentToReveal) {
       contentToReveal.style.display = 'block'; // Make the content block to reveal it
-      gsap.to(contentToReveal, { top: '50vh', duration: 0.5, onComplete: () => {
+      gsap.to(contentToReveal, { top: '70vh', duration: 0.5, onComplete: () => {
         // Reinitialize draggable if necessary
         Draggable.create(contentToReveal, {
           type: "y",
