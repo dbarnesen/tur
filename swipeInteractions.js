@@ -5,25 +5,18 @@ gsap.registerPlugin(Draggable);
 
 export function initSwipeInteractions() {
   
-  const bottomSheet = document.getElementById('.tur-collection-content');
-
-  if (bottomSheet) {
-    const viewportHeight = window.innerHeight;
-    const snapThreshold = viewportHeight * 0.5; // 50vh
-    const snapToPosition = viewportHeight * 0.85; // 85vh
-
-    Draggable.create(bottomSheet, {
-      type: "y",
-      bounds: window,
-      onDragEnd: function() {
-        if (Math.abs(this.y) > snapThreshold) {
-          // Snap to 85vh (considering the sign of this.y)
-          gsap.to(bottomSheet, { y: this.y < 0 ? -snapToPosition : snapToPosition, duration: 0.5 });
-        } else {
-          // Animate back to original position or to another snap point
-          gsap.to(bottomSheet, { y: 0, duration: 0.5 });
-        }
+  document.querySelectorAll('.tur-collection-content').forEach(bottomSheet => {
+  Draggable.create(bottomSheet, {
+    type: "y",
+    bounds: window,
+    onDragEnd: function() {
+      let snapTo = 0; // Default snap back to the starting position
+      if (Math.abs(this.y) > snapThreshold) {
+        snapTo = this.y < 0 ? -snapToPosition : snapToPosition;
       }
-    });
-  }
+      gsap.to(bottomSheet, { y: snapTo, duration: 0.5 });
+    }
+  });
+});
+
 };
