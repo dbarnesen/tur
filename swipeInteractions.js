@@ -40,7 +40,7 @@ document.querySelectorAll('.tur-collection-item').forEach(item => {
         // Reinitialize draggable if necessary
         Draggable.create(contentToReveal, {
           type: "y",
-          bounds: { minY: -window.innerHeight * 0.6, maxY: 0 },
+          bounds: { minY: -window.innerHeight * 0.5, maxY: 0 },
           // Add your onDragEnd logic here
         });
       }});
