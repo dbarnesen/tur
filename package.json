@@ -1,7 +1,7 @@
 {
   "name": "tur",
-  "version": "1.0.0",
-  "description": "tur test Risør",
+  "version": "1.0.1",
+  "description": "tur Risør",
   "main": "dist/bundle.js",
   "scripts": {
     "build": "rollup -c"
