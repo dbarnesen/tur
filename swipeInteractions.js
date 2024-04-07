@@ -1,9 +1,10 @@
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 
-document.addEventListener('DOMContentLoaded', function() {
-  gsap.registerPlugin(Draggable);
+gsap.registerPlugin(Draggable);
 
+export function initSwipeInteractions() {
+  
   const bottomSheet = document.getElementById('tur-collection-content');
 
   if (bottomSheet) {
