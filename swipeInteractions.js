@@ -8,8 +8,8 @@ export function initSwipeInteractions() {
 
   if (bottomSheet) {
     const viewportHeight = window.innerHeight;
-    const minY = viewportHeight * 0.3; // 20vh from the top
-    const maxY = viewportHeight * 0.7; // Initial position at 70vh from the top
+    const minY = viewportHeight * 0.6; // 20vh from the top
+    const maxY = viewportHeight * 0.8; // Initial position at 70vh from the top
 
     Draggable.create(bottomSheet, {
       type: "y",
@@ -40,7 +40,7 @@ document.querySelectorAll('.tur-collection-item').forEach(item => {
         // Reinitialize draggable if necessary
         Draggable.create(contentToReveal, {
           type: "y",
-          bounds: { minY: -window.innerHeight * 0.3, maxY: 0 },
+          bounds: { minY: -window.innerHeight * 0.6, maxY: 0 },
           // Add your onDragEnd logic here
         });
       }});
