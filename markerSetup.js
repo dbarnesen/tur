@@ -1,4 +1,5 @@
 import mapboxgl from 'mapbox-gl';
+import { gsap } from "gsap";
 import { createCustomMarkerElement, scrollToSelectedItem } from './markerUtils.js';
 import { mapStyles, selectedMarkerIcon, unselectedMarkerIcon } from './config.js';
 import { filterCollectionItems, filterMarkersAndAdjustMapView } from './markerFilter.js';
