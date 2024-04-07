@@ -64,10 +64,10 @@ document.querySelectorAll('.tur-collection-item').forEach(item => {
   item.addEventListener('click', function() {
     const itemId = this.getAttribute('data-item-id');
     const contentToReveal = document.querySelector(`.tur-collection-content[data-item-id="${itemId}"]`);
-
+    
     if (contentToReveal) {
-      contentToReveal.style.display = 'flex'; // Make the content flex to reveal it
-      gsap.to(contentToReveal, { top: '40vh', duration: 0.5 }); // Animate to 30vh up
+      contentToReveal.style.display = 'block'; // Make the content block to reveal it
+      gsap.to(contentToReveal, { top: '70vh', duration: 0.5, onComplete: () => initSwipeInteractions() });
     }
   });
 });
