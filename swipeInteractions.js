@@ -8,7 +8,7 @@ export function initSwipeInteractions() {
 
   if (bottomSheet) {
     const viewportHeight = window.innerHeight;
-    const minY = viewportHeight * 0.2; // 20vh from the top
+    const minY = viewportHeight * 0.3; // 20vh from the top
     const maxY = viewportHeight * 0.7; // Initial position at 70vh from the top
 
     Draggable.create(bottomSheet, {
@@ -29,8 +29,8 @@ document.querySelectorAll('.tur-collection-item').forEach(item => {
     
     // Reset and hide the previously active content
     if (currentActiveContent && currentActiveContent !== contentToReveal) {
-      currentActiveContent.style.display = 'none';
       gsap.to(currentActiveContent, { top: '80vh', duration: 0.5 });
+      currentActiveContent.style.display = 'none';
     }
 
     // Show the newly selected content
@@ -40,7 +40,7 @@ document.querySelectorAll('.tur-collection-item').forEach(item => {
         // Reinitialize draggable if necessary
         Draggable.create(contentToReveal, {
           type: "y",
-          bounds: { minY: -window.innerHeight * 0.2, maxY: 0 },
+          bounds: { minY: -window.innerHeight * 0.3, maxY: 0 },
           // Add your onDragEnd logic here
         });
       }});
