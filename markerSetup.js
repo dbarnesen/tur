@@ -63,31 +63,3 @@ export function setupMarkers(initialMap) {
 
 }
 
-function toggleCollectionContent(content) {
-    if (content !== currentlyOpenContent) {
-        if (currentlyOpenContent) {
-            closeCollectionContent(currentlyOpenContent);
-        }
-        openCollectionContent(content);
-        currentlyOpenContent = content;
-    } else {
-        closeCollectionContent(content);
-        currentlyOpenContent = null;
-    }
-}
-
-function openCollectionContent(content) {
-    content.style.display = 'block';
-    setTimeout(() => {
-        content.classList.add('expanded');
-        content.style.height = '30vh';
-    }, 10);
-}
-
-function closeCollectionContent(content) {
-    content.classList.remove('expanded');
-    setTimeout(() => {
-        content.style.height = '0';
-        setTimeout(() => content.style.display = 'none', 300);
-    }, 10);
-}
