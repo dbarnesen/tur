@@ -64,47 +64,33 @@ function animateContentIn(contentDiv) {
 }
 
 function makeDraggable(contentDiv) {
+    // Conversion from vh to pixels for accuracy in calculations
     const viewportHeight = window.innerHeight;
-    const initialBottom = 30; // Initial bottom position in vh when revealed
-    const maxDragUpBottom = 85; // Max up position in vh
-    const halfwayPointVH = 50; // Halfway point in vh for deciding snap direction
-
-    // Convert vh to pixels for calculations
-    const initialBottomPx = viewportHeight * (initialBottom / 100);
-    const maxDragUpBottomPx = viewportHeight * (maxDragUpBottom / 100);
-    const halfwayPointPx = viewportHeight * (halfwayPointVH / 100);
+    const upperBound = viewportHeight * 0.15; // Represents 85vh from the bottom
+    const lowerBound = viewportHeight * 0.7; // Represents 30vh from the bottom
+    const halfwayPoint = viewportHeight * 0.5; // Represents 50vh from the bottom
 
     Draggable.create(contentDiv, {
         type: "y",
         bounds: {
-            minY: -(viewportHeight - maxDragUpBottomPx), // Allow dragging up to the maxDragUpBottom
-            maxY: 0 // Starts from the initial position, don't allow dragging down beyond the initial reveal
+            minY: -upperBound,
+            maxY: -lowerBound
         },
         onDragEnd: function() {
-            let endY = this.endY;
-            let snapToY;
-
-            // Determine whether to snap to the top or back to the initial position based on the halfway point
-            if (Math.abs(endY) > halfwayPointPx) {
-                // Snap to maxDragUpBottom if dragged beyond the halfway point
-                snapToY = -(viewportHeight - maxDragUpBottomPx);
+            // Determine if we're closer to the top or bottom
+            let finalY;
+            if (Math.abs(this.y) < halfwayPoint) {
+                finalY = -lowerBound; // Go back to initial position (30vh from bottom)
             } else {
-                // Snap back to initialBottom if not dragged beyond the halfway point
-                snapToY = -(viewportHeight - initialBottomPx);
+                finalY = -upperBound; // Snap to the top position (85vh from bottom)
             }
 
-            // Animate to the determined position
-            gsap.to(contentDiv, {
-                y: snapToY,
-                duration: 0.5,
-                onComplete: () => {
-                    // If needed, adjust contentDiv's style to reflect the new 'bottom' position
-                    // This is optional and can be used if you're tracking the 'bottom' position in a different way
-                }
-            });
+            // Apply the animation to move the content
+            gsap.to(this.target, { y: finalY, duration: 0.5 });
         }
     });
 }
+
 
 
 // Export the initSwipeInteractions function
