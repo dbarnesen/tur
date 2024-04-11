@@ -5,7 +5,7 @@ import { Draggable } from "gsap/Draggable";
 // Register the GSAP Draggable plugin
 gsap.registerPlugin(Draggable);
 
-document.addEventListener('DOMContentLoaded', () => {
+
     let currentActiveContent = null;
 
     const initializeDraggable = (contentDiv) => {
@@ -73,5 +73,4 @@ document.addEventListener('DOMContentLoaded', () => {
             hideContent(contentDiv);
         });
     });
-});
 export default initSwipeInteractions;
