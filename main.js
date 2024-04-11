@@ -1,7 +1,7 @@
 import { mapboxAccessToken } from './config.js';
 import { initializeMap } from './mapSetup.js';
 import { setupMarkers } from './markerSetup.js';
-import { initSwipeInteractions } from './swipeInteractions.js';
+import initSwipeInteractions from './swipeInteractions.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     mapboxgl.accessToken = mapboxAccessToken; // Ensures mapboxgl is available globally
