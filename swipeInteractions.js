@@ -73,3 +73,4 @@ document.querySelectorAll('.tur-content-close').forEach(button => {
 });
 
 let currentActiveContent = null;
+export { initSwipeInteractions };
