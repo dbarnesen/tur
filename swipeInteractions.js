@@ -5,45 +5,29 @@ import { Draggable } from "gsap/Draggable";
 // Register the GSAP Draggable plugin
 gsap.registerPlugin(Draggable);
 
-// Define a variable to keep track of the currently active content
 let currentActiveContent = null;
 
-// Define the main function for initializing swipe interactions
+// This function is called to animate content in and make it draggable
 function initSwipeInteractions() {
     document.querySelectorAll('.tur-collection-item').forEach(item => {
         item.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
-            showContent(id);
+            const contentDiv = document.querySelector(`.tur-collection-content[data-id="${id}"]`);
+            showAndDragContent(contentDiv);
         });
     });
 
     document.querySelectorAll('.tur-content-close').forEach(button => {
         button.addEventListener('click', function() {
             const contentDiv = this.closest('.tur-collection-content');
-            gsap.to(contentDiv, {
-                bottom: '-80vh', duration: 0.5, onComplete: () => {
-                    contentDiv.style.display = 'none';
-                    if (contentDiv === currentActiveContent) {
-                        currentActiveContent = null;
-                    }
-                }
-            });
+            hideContent(contentDiv);
         });
     });
 }
 
-// Define supporting functions used within initSwipeInteractions
-function showContent(id) {
-    const contentDiv = document.querySelector(`.tur-collection-content[data-id="${id}"]`);
-
+function showAndDragContent(contentDiv) {
     if (currentActiveContent) {
-        gsap.to(currentActiveContent, {
-            bottom: '-80vh', duration: 0.5, onComplete: () => {
-                currentActiveContent.style.display = 'none';
-                currentActiveContent = null;
-                animateContentIn(contentDiv);
-            }
-        });
+        hideContent(currentActiveContent, () => animateContentIn(contentDiv));
     } else {
         animateContentIn(contentDiv);
     }
@@ -51,11 +35,7 @@ function showContent(id) {
 
 function animateContentIn(contentDiv) {
     contentDiv.style.display = 'block';
-    gsap.fromTo(contentDiv, {
-        bottom: '-80vh'
-    }, {
-        bottom: '-30vh',
-        duration: 0.5,
+    gsap.fromTo(contentDiv, { bottom: '-80vh' }, { bottom: '30vh', duration: 0.5, 
         onComplete: () => {
             makeDraggable(contentDiv);
             currentActiveContent = contentDiv;
@@ -63,35 +43,41 @@ function animateContentIn(contentDiv) {
     });
 }
 
-function makeDraggable(contentDiv) {
-    // Conversion from vh to pixels for accuracy in calculations
-    const viewportHeight = window.innerHeight;
-    const upperBound = viewportHeight * 0.15; // Represents 85vh from the bottom
-    const lowerBound = viewportHeight * 0.7; // Represents 30vh from the bottom
-    const halfwayPoint = viewportHeight * 0.5; // Represents 50vh from the bottom
-
-    Draggable.create(contentDiv, {
-        type: "y",
-        bounds: {
-            minY: -upperBound,
-            maxY: -lowerBound
-        },
-        onDragEnd: function() {
-            // Determine if we're closer to the top or bottom
-            let finalY;
-            if (Math.abs(this.y) < halfwayPoint) {
-                finalY = -lowerBound; // Go back to initial position (30vh from bottom)
-            } else {
-                finalY = -upperBound; // Snap to the top position (85vh from bottom)
+function hideContent(contentDiv, callback = () => {}) {
+    gsap.to(contentDiv, {
+        bottom: '-80vh', duration: 0.5, onComplete: () => {
+            contentDiv.style.display = 'none';
+            if (contentDiv === currentActiveContent) {
+                currentActiveContent = null;
             }
-
-            // Apply the animation to move the content
-            gsap.to(this.target, { y: finalY, duration: 0.5 });
+            callback();
         }
     });
 }
 
+function makeDraggable(contentDiv) {
+    const viewportHeight = window.innerHeight;
+    const lowerBound = viewportHeight * 0.7; // Represents 30vh from the bottom
+    const upperBound = viewportHeight * 0.15; // Represents 85vh from the bottom
 
+    Draggable.create(contentDiv, {
+        type: "y",
+        bounds: { minY: -upperBound, maxY: 0 },
+        onDragEnd: function() {
+            let newY = 0; // Default to going back to start position
+            const endYRelativeToViewport = viewportHeight + this.endY; // Calculate end position relative to the viewport
 
-// Export the initSwipeInteractions function
+            // Decide whether to snap up or down based on the drag end position
+            if (endYRelativeToViewport < viewportHeight * 0.5) { // If dragged beyond halfway up the screen
+                newY = -upperBound; // Snap up to max position
+            } else {
+                newY = -lowerBound; // Snap back to initial position
+            }
+
+            // Animate to the new position
+            gsap.to(contentDiv, { y: newY, duration: 0.5 });
+        }
+    });
+}
+
 export default initSwipeInteractions;
