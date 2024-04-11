@@ -3,56 +3,73 @@ import { Draggable } from "gsap/Draggable";
 
 gsap.registerPlugin(Draggable);
 
-let currentActiveContent = null; // Track the currently active content div
+document.querySelectorAll('.tur-collection-item').forEach(item => {
+  item.addEventListener('click', function() {
+    const id = this.getAttribute('data-id');
+    showContent(id);
+  });
+});
 
-export function initSwipeInteractions() {
-  document.querySelectorAll('.tur-collection-item').forEach(item => {
-    item.addEventListener('click', function() {
-      const itemId = this.getAttribute('data-item-id');
-      const contentToReveal = document.querySelector(`.tur-collection-content[data-item-id="${itemId}"]`);
+function showContent(id) {
+  const contentDiv = document.querySelector(`.tur-collection-content[data-id="${id}"]`);
 
-      // Reset and hide the previously active content
-      if (currentActiveContent && currentActiveContent !== contentToReveal) {
-        // Animate the current active content back to its starting position
-        gsap.to(currentActiveContent, {
-          y: 0,
-          top: '80vh', // Assuming 80vh is the off-screen position
-          duration: 0.5,
-          onComplete: () => {
-            currentActiveContent.style.display = 'none'; // Hide after animation
-          }
-        });
+  if (currentActiveContent) {
+    gsap.to(currentActiveContent, {
+      bottom: '-70vh', duration: 0.5, onComplete: () => {
+        currentActiveContent.style.display = 'none';
+        currentActiveContent = null;
+        animateContentIn(contentDiv);
       }
+    });
+  } else {
+    animateContentIn(contentDiv);
+  }
+}
 
-      // Show the newly selected content
-      if (contentToReveal && contentToReveal !== currentActiveContent) {
-        contentToReveal.style.display = 'block'; // Make the content block to reveal it
-        gsap.to(contentToReveal, {
-          top: '60vh', // Initial reveal position
-          duration: 0.5,
-          onComplete: () => {
-            // Initialize draggable with snapping functionality
-            Draggable.create(contentToReveal, {
-              type: "y",
-              bounds: document.body,
-              onDragEnd: function() {
-                const viewportHeight = window.innerHeight;
-                const minY = viewportHeight * 0.2; // 20vh from the top
-                const halfwayPoint = viewportHeight / 2;
-                if (Math.abs(this.y) > halfwayPoint) {
-                  // Snap to 20vh from the top
-                  gsap.to(contentToReveal, { y: -minY, duration: 0.5 });
-                } else {
-                  // Return to the initial position (60vh from the top)
-                  gsap.to(contentToReveal, { y: 0, top: '60vh', duration: 0.5 });
-                }
-              }
-            });
-          }
-        });
+function animateContentIn(contentDiv) {
+  contentDiv.style.display = 'block';
+  gsap.fromTo(contentDiv, {
+    bottom: '-70vh'
+  }, {
+    bottom: '30vh', // Slide up to 30vh from the bottom
+    duration: 0.5,
+    onComplete: () => {
+      makeDraggable(contentDiv);
+      currentActiveContent = contentDiv;
+    }
+  });
+}
 
-        currentActiveContent = contentToReveal; // Update the currently active content
+function makeDraggable(contentDiv) {
+  const viewportHeight = window.innerHeight;
+  const snapPoints = [viewportHeight * 0.3, viewportHeight * 0.5, viewportHeight * 0.85]; // 30vh, 50vh, and 85vh
+  
+  Draggable.create(contentDiv, {
+    type: "y",
+    bounds: {minY: -viewportHeight * 0.85, maxY: 0},
+    onDragEnd: function() {
+      // Logic to snap to 85vh or back to 30vh
+      let newY = -viewportHeight * 0.3; // Default to 30vh
+      if (this.endY < -viewportHeight * 0.5) {
+        newY = -viewportHeight * 0.85; // Snap to 85vh
+      }
+      gsap.to(contentDiv, {y: newY, duration: 0.5});
+    }
+  });
+}
+
+document.querySelectorAll('.tur-content-close').forEach(button => {
+  button.addEventListener('click', function() {
+    const contentDiv = this.closest('.tur-collection-content');
+    gsap.to(contentDiv, {
+      bottom: '-70vh', duration: 0.5, onComplete: () => {
+        contentDiv.style.display = 'none';
+        if (contentDiv === currentActiveContent) {
+          currentActiveContent = null;
+        }
       }
     });
   });
-}
+});
+
+let currentActiveContent = null;
