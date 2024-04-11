@@ -40,7 +40,7 @@ const showAndDragContent = (contentDiv) => {
 const animateContentIn = (contentDiv) => {
     contentDiv.style.display = 'block';
     gsap.fromTo(contentDiv, { y: 0, bottom: '-100%' }, {
-        top: '30vh', 
+        bottom: '-30%', 
         duration: 0.5, 
         onComplete: () => {
             initializeDraggable(contentDiv);
