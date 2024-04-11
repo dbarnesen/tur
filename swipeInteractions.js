@@ -21,7 +21,7 @@ function initSwipeInteractions() {
         button.addEventListener('click', function() {
             const contentDiv = this.closest('.tur-collection-content');
             gsap.to(contentDiv, {
-                bottom: '-70vh', duration: 0.5, onComplete: () => {
+                bottom: '-80vh', duration: 0.5, onComplete: () => {
                     contentDiv.style.display = 'none';
                     if (contentDiv === currentActiveContent) {
                         currentActiveContent = null;
@@ -38,7 +38,7 @@ function showContent(id) {
 
     if (currentActiveContent) {
         gsap.to(currentActiveContent, {
-            bottom: '-70vh', duration: 0.5, onComplete: () => {
+            bottom: '-80vh', duration: 0.5, onComplete: () => {
                 currentActiveContent.style.display = 'none';
                 currentActiveContent = null;
                 animateContentIn(contentDiv);
@@ -52,7 +52,7 @@ function showContent(id) {
 function animateContentIn(contentDiv) {
     contentDiv.style.display = 'block';
     gsap.fromTo(contentDiv, {
-        bottom: '-70vh'
+        bottom: '-80vh'
     }, {
         bottom: '-30vh',
         duration: 0.5,
@@ -68,11 +68,11 @@ function makeDraggable(contentDiv) {
 
     Draggable.create(contentDiv, {
         type: "y",
-        bounds: {minY: -viewportHeight * 0.85, maxY: 0},
+        bounds: {minY: -viewportHeight * 0.65, maxY: 0},
         onDragEnd: function() {
             let newY = -viewportHeight * 0.3; // Default to 30vh
             if (this.endY < -viewportHeight * 0.5) {
-                newY = -viewportHeight * 0.85; // Snap to 85vh
+                newY = -viewportHeight * 0.65; // Snap to 85vh
             }
             gsap.to(contentDiv, {y: newY, duration: 0.5});
         }
