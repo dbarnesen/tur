@@ -65,19 +65,47 @@ function animateContentIn(contentDiv) {
 
 function makeDraggable(contentDiv) {
     const viewportHeight = window.innerHeight;
+    const initialBottom = 30; // Initial bottom position in vh when revealed
+    const maxDragUpBottom = 85; // Max up position in vh
+    const halfwayPointVH = 50; // Halfway point in vh for deciding snap direction
+
+    // Convert vh to pixels for calculations
+    const initialBottomPx = viewportHeight * (initialBottom / 100);
+    const maxDragUpBottomPx = viewportHeight * (maxDragUpBottom / 100);
+    const halfwayPointPx = viewportHeight * (halfwayPointVH / 100);
 
     Draggable.create(contentDiv, {
         type: "y",
-        bounds: {minY: -viewportHeight * 0.85, maxY: 0},
+        bounds: {
+            minY: -(viewportHeight - maxDragUpBottomPx), // Allow dragging up to the maxDragUpBottom
+            maxY: 0 // Starts from the initial position, don't allow dragging down beyond the initial reveal
+        },
         onDragEnd: function() {
-            let newY = -viewportHeight * 0.3; // Default to 30vh
-            if (this.endY < -viewportHeight * 0.3) {
-                newY = -viewportHeight * 0.85; // Snap to 85vh
+            let endY = this.endY;
+            let snapToY;
+
+            // Determine whether to snap to the top or back to the initial position based on the halfway point
+            if (Math.abs(endY) > halfwayPointPx) {
+                // Snap to maxDragUpBottom if dragged beyond the halfway point
+                snapToY = -(viewportHeight - maxDragUpBottomPx);
+            } else {
+                // Snap back to initialBottom if not dragged beyond the halfway point
+                snapToY = -(viewportHeight - initialBottomPx);
             }
-            gsap.to(contentDiv, {y: newY, duration: 0.5});
+
+            // Animate to the determined position
+            gsap.to(contentDiv, {
+                y: snapToY,
+                duration: 0.5,
+                onComplete: () => {
+                    // If needed, adjust contentDiv's style to reflect the new 'bottom' position
+                    // This is optional and can be used if you're tracking the 'bottom' position in a different way
+                }
+            });
         }
     });
 }
+
 
 // Export the initSwipeInteractions function
 export default initSwipeInteractions;
