@@ -68,7 +68,7 @@ function makeDraggable(contentDiv) {
 
     Draggable.create(contentDiv, {
         type: "y",
-        bounds: {minY: -viewportHeight * 0.65, maxY: 0},
+        bounds: {minY: -viewportHeight * 0, maxY: 0.65},
         onDragEnd: function() {
             let newY = -viewportHeight * 0.3; // Default to 30vh
             if (this.endY < -viewportHeight * 0.5) {
