@@ -39,7 +39,7 @@ const showAndDragContent = (contentDiv) => {
 // Function to animate content in view and make it draggable
 const animateContentIn = (contentDiv) => {
     contentDiv.style.display = 'block';
-    gsap.fromTo(contentDiv, { y: 0, top: '-100%' }, {
+    gsap.fromTo(contentDiv, { y: 0, bottom: '-100%' }, {
         top: '30vh', 
         duration: 0.5, 
         onComplete: () => {
