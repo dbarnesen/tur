@@ -54,7 +54,7 @@ function animateContentIn(contentDiv) {
     gsap.fromTo(contentDiv, {
         bottom: '-70vh'
     }, {
-        bottom: '30vh',
+        bottom: '-30vh',
         duration: 0.5,
         onComplete: () => {
             makeDraggable(contentDiv);
