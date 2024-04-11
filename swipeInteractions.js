@@ -1,3 +1,7 @@
+export default function initSwipeInteractions() {
+  // Function implementation
+
+
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 
@@ -73,4 +77,4 @@ document.querySelectorAll('.tur-content-close').forEach(button => {
 });
 
 let currentActiveContent = null;
-export { initSwipeInteractions };
+}
