@@ -68,11 +68,11 @@ function makeDraggable(contentDiv) {
 
     Draggable.create(contentDiv, {
         type: "y",
-        bounds: {minY: -viewportHeight * 0.55, maxY: 0},
+        bounds: {minY: -viewportHeight * 0.85, maxY: 0},
         onDragEnd: function() {
             let newY = -viewportHeight * 0.3; // Default to 30vh
-            if (this.endY < -viewportHeight * 0.5) {
-                newY = -viewportHeight * 0.55; // Snap to 85vh
+            if (this.endY < -viewportHeight * 0.3) {
+                newY = -viewportHeight * 0.85; // Snap to 85vh
             }
             gsap.to(contentDiv, {y: newY, duration: 0.5});
         }
