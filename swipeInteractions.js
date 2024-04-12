@@ -75,7 +75,7 @@ const initializeDraggable = (contentDiv) => {
         edgeResistance: 0.85,
         bounds: { minY: -window.innerHeight * 0.5, maxY: 0 },
         onDragEnd: function() {
-            let newY = this.getDirection("startToEnd") === "down" ? 0 : -window.innerHeight * 0.55;
+            let newY = this.getDirection("startToEnd") === "down" ? 0 : -window.innerHeight * 0.5;
             if (Math.abs(this.y) >= window.innerHeight * 0.25) {
                 newY = -window.innerHeight * 0.55;
             }
