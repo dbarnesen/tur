@@ -69,10 +69,10 @@ const initializeDraggable = (contentDiv) => {
     if (Draggable.get(contentDiv)) {
         Draggable.get(contentDiv).kill();
     }
-
+    gsap.set(contentDiv, { y: 0 });
     Draggable.create(contentDiv, {
         type: "y",
-        edgeResistance: 0.65,
+        edgeResistance: 0.85,
         bounds: { minY: -window.innerHeight * 0.5, maxY: 0 },
         onDragEnd: function() {
             let newY = this.getDirection("startToEnd") === "down" ? 0 : -window.innerHeight * 0.55;
