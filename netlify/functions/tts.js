@@ -20,20 +20,31 @@ exports.handler = async function(event, context) {
     };
 
     try {
-        const { text } = JSON.parse(event.body);
+        const { text, language } = JSON.parse(event.body);
         const API_KEY = process.env.GOOGLE_CLOUD_TTS_API_KEY;
         const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${API_KEY}`;
 
+        // Map languages to Google TTS language codes and voice names
+        const languageSettings = {
+            'no': { languageCode: 'nb-NO', voiceName: 'nb-NO-Wavenet-D' },
+            'nl': { languageCode: 'nl-NL', voiceName: 'nl-NL-Wavenet-A' },
+            'en': { languageCode: 'en-US', voiceName: 'en-US-Wavenet-D' },
+            'fr': { languageCode: 'fr-FR', voiceName: 'fr-FR-Wavenet-D' },
+            'de': { languageCode: 'de-DE', voiceName: 'de-DE-Wavenet-D' }
+        };
+
+        const voiceSettings = languageSettings[language] || languageSettings['no']; // Default to Norwegian if no match
+
         const requestBody = {
             input: { text: text },
-            voice: { languageCode: "nb-NO", name: "nb-NO-Wavenet-D" },  // You can change the voice settings
+            voice: { languageCode: voiceSettings.languageCode, name: voiceSettings.voiceName },
             audioConfig: {
-            audioEncoding: "MP3",
-            speakingRate: 0.9,
-            pitch: 0,
-            volumeGainDb: 0,
-            effectsProfileId: ["handset-class-device"]
-        }
+                audioEncoding: "MP3",
+                speakingRate: 0.9,
+                pitch: 0,
+                volumeGainDb: 0,
+                effectsProfileId: ["handset-class-device"]
+            }
         };
 
         const response = await fetch(url, {
