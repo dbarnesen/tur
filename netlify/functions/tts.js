@@ -1,5 +1,20 @@
 const fetch = require("node-fetch");
 
+const headers = {
+  'Access-Control-Allow-Origin': '*',  // Adjust accordingly for production
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST'
+};
+
+if (event.httpMethod === 'OPTIONS') {
+  // CORS preflight
+  return {
+    statusCode: 200,
+    headers,
+    body: ''
+  };
+}
+
 exports.handler = async function(event, context) {
     const { text } = JSON.parse(event.body);
     const API_KEY = process.env.GOOGLE_CLOUD_TTS_API_KEY;
