@@ -26,7 +26,7 @@ exports.handler = async function(event, context) {
 
         const requestBody = {
             input: { text: text },
-            voice: { languageCode: "nb-NO", name: "nb-NO-Wavenet-A" },  // You can change the voice settings
+            voice: { languageCode: "nb-NO", name: "nb-NO-Standard-C" },  // You can change the voice settings
             audioConfig: { audioEncoding: "MP3" }
         };
 
