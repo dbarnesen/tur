@@ -39,8 +39,8 @@ exports.handler = async function(event, context) {
             input: { text: text },
             voice: { languageCode: voiceSettings.languageCode, name: voiceSettings.voiceName },
             audioConfig: {
-                audioEncoding: "MP3",
-                speakingRate: 1,
+                audioEncoding: "OGG_OPUS",
+                speakingRate: 1.0,
                 pitch: 0,
                 volumeGainDb: 0,
                 effectsProfileId: ["handset-class-device"]
