@@ -27,10 +27,10 @@ exports.handler = async function(event, context) {
         // Map languages to Google TTS language codes and voice names
         const languageSettings = {
             'no': { languageCode: 'nb-NO', voiceName: 'nb-NO-Wavenet-D' },
-            'nl': { languageCode: 'nl-NL', voiceName: 'nl-NL-Wavenet-A' },
-            'en': { languageCode: 'en-US', voiceName: 'en-US-Wavenet-D' },
+            'nl': { languageCode: 'nl-NL', voiceName: 'nl-NL-Wavenet-D' },
+            'en': { languageCode: 'en-US', voiceName: 'en-US-Journey-D' },
             'fr': { languageCode: 'fr-FR', voiceName: 'fr-FR-Wavenet-D' },
-            'de': { languageCode: 'de-DE', voiceName: 'de-DE-Wavenet-D' }
+            'de': { languageCode: 'de-DE', voiceName: 'de-DE-Wavenet-E' }
         };
 
         const voiceSettings = languageSettings[language] || languageSettings['no']; // Default to Norwegian if no match
