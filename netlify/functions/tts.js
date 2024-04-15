@@ -27,7 +27,13 @@ exports.handler = async function(event, context) {
         const requestBody = {
             input: { text: text },
             voice: { languageCode: "nb-NO", name: "nb-NO-Wavenet-E" },  // You can change the voice settings
-            audioConfig: { audioEncoding: "MP3" }
+            audioConfig: {
+            audioEncoding: "MP3",
+            speakingRate: 0.9,
+            pitch: 0,
+            volumeGainDb: 0,
+            effectsProfileId: ["handset-class-device"]
+        }
         };
 
         const response = await fetch(url, {
