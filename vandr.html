@@ -29,7 +29,7 @@
       trackUserLocation: true
     }));
 
-    fetch(' https://us-central1-vandr-dux0mn.cloudfunctions.net/getLocations')
+    fetch('https://us-central1-vandr-dux0mn.cloudfunctions.net/getLocations')
       .then(response => response.json())
       .then(data => {
         data.forEach(location => {
