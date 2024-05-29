@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>MapBox Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href='https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js'></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZGJhcm5lc2VuIiwiYSI6IjFWeUJFNFUifQ.CF2Du3MPcaCQhBBNJSQMDQ';
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/dbarnesen/ckk3vfvbi4t1v17p82fuy61pt',
+      center: [0, 0],
+      zoom: 2
+    });
+
+    map.addControl(new mapboxgl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true
+      },
+      trackUserLocation: true
+    }));
+
+    fetch(' https://us-central1-vandr-dux0mn.cloudfunctions.net/getLocations')
+      .then(response => response.json())
+      .then(data => {
+        data.forEach(location => {
+          const marker = new mapboxgl.Marker()
+            .setLngLat([location.lat_lng.longitude, location.lat_lng.latitude])
+            .addTo(map)
+            .getElement()
+            .addEventListener('click', () => {
+              window.flutter_inappwebview.callHandler('openBottomSheet', location);
+            });
+        });
+      })
+      .catch(error => console.error('Error fetching locations:', error));
+  </script>
+</body>
+</html>
