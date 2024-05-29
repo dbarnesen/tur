@@ -33,13 +33,20 @@
       .then(response => response.json())
       .then(data => {
         data.forEach(location => {
-          const marker = new mapboxgl.Marker()
-            .setLngLat([location.lat_lng.longitude, location.lat_lng.latitude])
-            .addTo(map)
-            .getElement()
-            .addEventListener('click', () => {
-              window.flutter_inappwebview.callHandler('openBottomSheet', location);
-            });
+          const latitude = location.lat_lng._latitude;
+          const longitude = location.lat_lng._longitude;
+
+          if (typeof latitude === 'number' && typeof longitude === 'number') {
+            const marker = new mapboxgl.Marker()
+              .setLngLat([longitude, latitude])
+              .addTo(map)
+              .getElement()
+              .addEventListener('click', () => {
+                window.flutter_inappwebview.callHandler('openBottomSheet', location);
+              });
+          } else {
+            console.error('Invalid latitude or longitude for location:', location);
+          }
         });
       })
       .catch(error => console.error('Error fetching locations:', error));
